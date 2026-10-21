@@ -1,0 +1,14 @@
+{
+  "disclaimer": "SYNTHETIC counts. Not from a lab run.",
+  "assay_type": "ribogreen-ee",
+  "library_version": "0.1.0",
+  "versions_compared": 3,
+  "checks": [
+    { "id": "missing-dual-standard-curves", "hits": 1, "unknown": 1 },
+    { "id": "inverted-ee-formula", "hits": 2, "unknown": 0 },
+    { "id": "dye-dilution-mismatch", "hits": 1, "unknown": 1 },
+    { "id": "well-volume-mismatch", "hits": 1, "unknown": 0 }
+  ],
+  "decisions": { "accepted": 0, "corrected": 0, "deferred": 0 },
+  "proposed_checks": 1
+}

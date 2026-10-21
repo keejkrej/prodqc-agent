@@ -1,0 +1,29 @@
+--- a/skills/protocol-consolidation/checks/ribogreen-ee.md
++++ b/skills/protocol-consolidation/checks/ribogreen-ee.md
+@@ -1,6 +1,6 @@
+ ---
+ assay_type: ribogreen-ee
+-library_version: 0.1.0
++library_version: 0.1.1
+ status: accepted
+ ---
+@@ -22,7 +22,7 @@
+ ### inverted-ee-formula
+ 
+ - **Class:** formula inversion
+-- **Flag when:** EE is written as `total/free`, `free/total` without `1 −`, or “total over free”.
++- **Flag when:** EE is written as `total/free`, `free/total` without `1 −`, or “total over free”. Treat `total over free` as the same class as `total/free`.
+ - **Clear when:** EE is `1 − (free/total)` (equivalently `(total − free) / total`) with free and total defined on the same standard-curve basis.
+ - **Do not encode:** a numeric EE spec (that belongs in the protocol draft, sourced).
+--- a/skills/protocol-consolidation/checks/CHANGELOG.md
++++ b/skills/protocol-consolidation/checks/CHANGELOG.md
+@@ -4,3 +4,8 @@
+ ## 0.1.0 — 2026-10-21
+ 
+ - Added `ribogreen-ee` with generic classes: `missing-dual-standard-curves`, `inverted-ee-formula`, `dye-dilution-mismatch`, `well-volume-mismatch`.
+ - Approver: library seed (synthetic worked example, not a lab run).
++
++## 0.1.1 — proposed (human must approve)
++
++- Clarify `inverted-ee-formula` treats “total over free” wording as the same hit.
++- Approver: pending.
