@@ -16,7 +16,7 @@ export interface Config {
 export function loadConfig(env: NodeJS.Dict<string> = process.env): Config {
   const rawBase = env.CONFLUENCE_BASE_URL?.trim();
   if (!rawBase) {
-    throw new ConfigError("CONFLUENCE_BASE_URL is required (origin of the self-hosted Confluence Server, with no trailing slash required)");
+    throw new ConfigError("CONFLUENCE_BASE_URL is required (origin of the Confluence Data Center instance)");
   }
   let baseUrl: string;
   try {
@@ -35,15 +35,14 @@ export function loadConfig(env: NodeJS.Dict<string> = process.env): Config {
   const hasBasic = Boolean(username) && password !== undefined && password.length > 0;
 
   let auth: Auth;
-  if (pat && hasBasic) {
-    throw new ConfigError("Set CONFLUENCE_PAT or CONFLUENCE_USER/CONFLUENCE_PASSWORD, not both");
-  }
   if (pat) {
     auth = { kind: "pat", token: pat };
   } else if (username && hasBasic) {
     auth = { kind: "basic", username, password: password ?? "" };
   } else {
-    throw new ConfigError("Provide CONFLUENCE_PAT (Bearer) or both CONFLUENCE_USER and CONFLUENCE_PASSWORD (basic auth)");
+    throw new ConfigError(
+      "Provide CONFLUENCE_PAT (Bearer, preferred on Data Center 9.2). If the admin has disabled PATs, set CONFLUENCE_USER and CONFLUENCE_PASSWORD for basic auth.",
+    );
   }
 
   const spacesRaw = env.CONFLUENCE_SPACES?.trim();

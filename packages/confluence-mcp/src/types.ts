@@ -1,12 +1,3 @@
-export type BodyMode = "storage" | "view" | "both" | "none";
-
-export interface SpaceSummary {
-  readonly id: string;
-  readonly key: string;
-  readonly name: string;
-  readonly type: string;
-}
-
 export interface PageSummary {
   readonly id: string;
   readonly type: string;
@@ -27,15 +18,10 @@ export interface PageDetail {
   readonly type: string;
   readonly title: string;
   readonly spaceKey: string;
-  readonly spaceName: string | null;
-  readonly version: PageVersion | null;
   readonly ancestors: readonly { id: string; title: string }[];
-  readonly labels: readonly string[];
   readonly body: {
     readonly storage?: string;
-    readonly view?: string;
   };
-  readonly webui: string | null;
 }
 
 export type OutgoingEdge =
@@ -56,9 +42,6 @@ export type OutgoingEdge =
 export interface AttachmentSummary {
   readonly id: string;
   readonly title: string;
-  readonly mediaType: string | null;
-  readonly fileSize: number | null;
-  readonly downloadPath: string | null;
 }
 
 export interface SpaceGraph {
@@ -79,14 +62,4 @@ export interface SpaceGraph {
     readonly to: string;
     readonly label?: string;
   }[];
-}
-
-export interface InstanceCheck {
-  readonly ok: boolean;
-  readonly baseUrl: string;
-  readonly restApi: string;
-  readonly auth: "pat" | "basic";
-  readonly allowlist: readonly string[] | null;
-  readonly message: string;
-  readonly sampleSpaceKeys: readonly string[];
 }

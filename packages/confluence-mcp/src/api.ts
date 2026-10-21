@@ -2,19 +2,15 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertSpaceAllowed, constrainCql, filterAllowed } from "./allowlist.js";
 import type { ConfluenceClient } from "./client.js";
-import { ConfluenceHttpError } from "./errors.js";
 import { parseStorageLinks } from "./links.js";
 import { asPaginated, asRecord, collectAll, type Paginated } from "./pagination.js";
 import type {
   AttachmentSummary,
-  BodyMode,
-  InstanceCheck,
   OutgoingEdge,
   PageDetail,
   PageSummary,
   PageVersion,
   SpaceGraph,
-  SpaceSummary,
 } from "./types.js";
 
 const DEFAULT_LIMIT = 25;
@@ -23,7 +19,6 @@ const MAX_GRAPH_PAGES = 500;
 
 export function createHandlers(client: ConfluenceClient) {
   return {
-    check_instance: () => checkInstance(client),
     get_page_links: (args: { id: string; resolve?: boolean | undefined }) =>
       getPageLinks(client, args),
     get_history: (args: { id: string; start?: number | undefined; limit?: number | undefined }) =>
@@ -34,134 +29,7 @@ export function createHandlers(client: ConfluenceClient) {
       maxPages?: number | undefined;
       includeLinks?: boolean | undefined;
     }) => buildSpaceGraph(client, args),
-    list_spaces: (args: { start?: number | undefined; limit?: number | undefined }) =>
-      listSpaces(client, args),
-    search: (args: {
-      cql: string;
-      start?: number | undefined;
-      limit?: number | undefined;
-      expand?: string | undefined;
-    }) => search(client, args),
-    get_page: (args: { id: string; body?: BodyMode | undefined }) => getPage(client, args),
-    get_children: (args: {
-      id: string;
-      start?: number | undefined;
-      limit?: number | undefined;
-    }) => getChildren(client, args),
   };
-}
-
-export async function listSpaces(
-  client: ConfluenceClient,
-  args: { start?: number | undefined; limit?: number | undefined },
-): Promise<Paginated<SpaceSummary>> {
-  const start = args.start ?? 0;
-  const limit = clampLimit(args.limit);
-  const allowed = client.config.allowedSpaces;
-
-  if (allowed && allowed.length > 0) {
-    const collected: SpaceSummary[] = [];
-    let cursor = 0;
-    const pageSize = 25;
-    while (collected.length < start + limit) {
-      const page = asPaginated<unknown>(
-        await client.getJson("/rest/api/space", { start: cursor, limit: pageSize }),
-        cursor,
-        pageSize,
-      );
-      collected.push(
-        ...filterAllowed(page.results.map(toSpaceSummary), (space) => space.key, allowed),
-      );
-      if (page.results.length < pageSize) break;
-      cursor += pageSize;
-    }
-    const sliced = collected.slice(start, start + limit);
-    return {
-      results: sliced,
-      start,
-      limit,
-      size: sliced.length,
-      totalSize: collected.length,
-    };
-  }
-
-  const page = asPaginated<unknown>(
-    await client.getJson("/rest/api/space", { start, limit }),
-    start,
-    limit,
-  );
-  const results = page.results.map(toSpaceSummary);
-  return { ...page, results };
-}
-
-export async function search(
-  client: ConfluenceClient,
-  args: {
-    cql: string;
-    start?: number | undefined;
-    limit?: number | undefined;
-    expand?: string | undefined;
-  },
-): Promise<Paginated<PageSummary> & { cql: string }> {
-  const start = args.start ?? 0;
-  const limit = clampLimit(args.limit);
-  const cql = constrainCql(args.cql, client.config.allowedSpaces);
-  const page = asPaginated<unknown>(
-    await client.getJson("/rest/api/content/search", {
-      cql,
-      start,
-      limit,
-      ...(args.expand ? { expand: args.expand } : {}),
-    }),
-    start,
-    limit,
-  );
-  const results = filterAllowed(
-    page.results.map(toPageSummary),
-    (item) => item.spaceKey,
-    client.config.allowedSpaces,
-  );
-  return { ...page, results, size: results.length, cql };
-}
-
-export async function getPage(
-  client: ConfluenceClient,
-  args: { id: string; body?: BodyMode | undefined },
-): Promise<PageDetail> {
-  const body = args.body ?? "both";
-  const expand = ["version", "ancestors", "space", "metadata.labels"];
-  if (body === "storage" || body === "both") expand.push("body.storage");
-  if (body === "view" || body === "both") expand.push("body.view");
-  const raw = asRecord(await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}`, {
-    expand: expand.join(","),
-  }));
-  const page = toPageDetail(raw);
-  assertSpaceAllowed(page.spaceKey, client.config.allowedSpaces);
-  return page;
-}
-
-export async function getChildren(
-  client: ConfluenceClient,
-  args: { id: string; start?: number | undefined; limit?: number | undefined },
-): Promise<Paginated<PageSummary>> {
-  await assertPageInAllowlist(client, args.id);
-  const start = args.start ?? 0;
-  const limit = clampLimit(args.limit);
-  const page = asPaginated<unknown>(
-    await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}/child/page`, {
-      start,
-      limit,
-      expand: "space,version",
-    }),
-    start,
-    limit,
-  );
-  const results = filterAllowed(
-    page.results.map(toPageSummary),
-    (item) => item.spaceKey,
-    client.config.allowedSpaces,
-  );
-  return { ...page, results, size: results.length };
 }
 
 export async function getPageLinks(
@@ -169,14 +37,13 @@ export async function getPageLinks(
   args: { id: string; resolve?: boolean | undefined },
 ): Promise<{ id: string; title: string; spaceKey: string; edges: OutgoingEdge[] }> {
   const resolve = args.resolve ?? true;
-  const page = await getPage(client, { id: args.id, body: "storage" });
+  const page = await getPage(client, args.id, true);
   const parsed = parseStorageLinks(page.body.storage ?? "");
   const attachments = parsed.some((link) => link.kind === "attachment")
-    ? (await collectAll(
-        (start, limit) =>
-          listAttachments(client, { id: page.id, start, limit }),
+    ? await collectAll(
+        (start, limit) => listAttachments(client, page.id, start, limit),
         { pageSize: 25, maxItems: 100 },
-      ))
+      )
     : [];
 
   const edges: OutgoingEdge[] = [];
@@ -185,7 +52,7 @@ export async function getPageLinks(
       const spaceKey = link.spaceKey ?? page.spaceKey;
       let toId: string | null = null;
       if (resolve) {
-        const found = await search(client, {
+        const found = await searchPages(client, {
           cql: `type=page AND title="${escapeCql(link.title)}" AND space="${escapeCql(spaceKey)}"`,
           limit: 5,
         });
@@ -205,25 +72,6 @@ export async function getPageLinks(
   return { id: page.id, title: page.title, spaceKey: page.spaceKey, edges };
 }
 
-async function listAttachments(
-  client: ConfluenceClient,
-  args: { id: string; start?: number | undefined; limit?: number | undefined },
-): Promise<Paginated<AttachmentSummary>> {
-  await assertPageInAllowlist(client, args.id);
-  const start = args.start ?? 0;
-  const limit = clampLimit(args.limit);
-  const page = asPaginated<unknown>(
-    await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}/child/attachment`, {
-      start,
-      limit,
-    }),
-    start,
-    limit,
-  );
-  const results = page.results.map(toAttachmentSummary);
-  return { ...page, results, size: results.length };
-}
-
 export async function getHistory(
   client: ConfluenceClient,
   args: { id: string; start?: number | undefined; limit?: number | undefined },
@@ -231,42 +79,16 @@ export async function getHistory(
   await assertPageInAllowlist(client, args.id);
   const start = args.start ?? 0;
   const limit = clampLimit(args.limit);
-  try {
-    const page = asPaginated<unknown>(
-      await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}/version`, {
-        start,
-        limit,
-      }),
+  const page = asPaginated<unknown>(
+    await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}/version`, {
       start,
       limit,
-    );
-    const versions = page.results.map(toPageVersion);
-    return { id: args.id, ...page, results: versions, versions, size: versions.length };
-  } catch (error) {
-    if (!(error instanceof ConfluenceHttpError) || error.status !== 404) throw error;
-    const history = asRecord(
-      await client.getJson(`/rest/api/content/${encodeURIComponent(args.id)}/history`),
-    );
-    const lastUpdated = asRecord(history.lastUpdated);
-    const createdBy = asRecord(history.createdBy);
-    const versions: PageVersion[] = [
-      {
-        number: typeof lastUpdated.number === "number" ? lastUpdated.number : 1,
-        when: typeof lastUpdated.when === "string" ? lastUpdated.when : null,
-        author: displayNameOf(lastUpdated.by) ?? displayNameOf(createdBy),
-        username: usernameOf(lastUpdated.by) ?? usernameOf(createdBy),
-        message: typeof lastUpdated.message === "string" ? lastUpdated.message : null,
-      },
-    ];
-    return {
-      id: args.id,
-      results: versions,
-      versions,
-      start: 0,
-      limit,
-      size: versions.length,
-    };
-  }
+    }),
+    start,
+    limit,
+  );
+  const versions = page.results.map(toPageVersion);
+  return { id: args.id, ...page, results: versions, versions, size: versions.length };
 }
 
 export async function buildSpaceGraph(
@@ -283,7 +105,7 @@ export async function buildSpaceGraph(
   const includeLinks = args.includeLinks ?? true;
   const pages = await collectAll(
     (start, limit) =>
-      search(client, {
+      searchPages(client, {
         cql: `type=page AND space="${escapeCql(args.spaceKey)}"`,
         start,
         limit,
@@ -310,7 +132,7 @@ export async function buildSpaceGraph(
   };
 
   for (const page of pages) {
-    const detail = await getPage(client, { id: page.id, body: includeLinks ? "storage" : "none" });
+    const detail = await getPage(client, page.id, includeLinks);
     const parent = detail.ancestors[detail.ancestors.length - 1];
     if (parent) addEdge("parent", parent.id, page.id);
     if (includeLinks) {
@@ -341,45 +163,78 @@ export async function buildSpaceGraph(
   return { outputPath, graph };
 }
 
-export async function checkInstance(client: ConfluenceClient): Promise<InstanceCheck> {
-  const restApi = "/rest/api/space";
-  try {
-    const page = asPaginated<unknown>(
-      await client.getJson(restApi, { limit: 5 }),
-      0,
-      5,
-    );
-    const spaces = filterAllowed(
-      page.results.map(toSpaceSummary),
-      (space) => space.key,
-      client.config.allowedSpaces,
-    );
-    return {
-      ok: true,
-      baseUrl: client.config.baseUrl,
-      restApi,
-      auth: client.config.auth.kind,
-      allowlist: client.config.allowedSpaces ? [...client.config.allowedSpaces] : null,
-      message: "Confluence Server REST API responded to GET /rest/api/space",
-      sampleSpaceKeys: spaces.map((space) => space.key),
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return {
-      ok: false,
-      baseUrl: client.config.baseUrl,
-      restApi,
-      auth: client.config.auth.kind,
-      allowlist: client.config.allowedSpaces ? [...client.config.allowedSpaces] : null,
-      message,
-      sampleSpaceKeys: [],
-    };
-  }
+async function searchPages(
+  client: ConfluenceClient,
+  args: {
+    cql: string;
+    start?: number | undefined;
+    limit?: number | undefined;
+    expand?: string | undefined;
+  },
+): Promise<Paginated<PageSummary>> {
+  const start = args.start ?? 0;
+  const limit = clampLimit(args.limit);
+  const cql = constrainCql(args.cql, client.config.allowedSpaces);
+  const page = asPaginated<unknown>(
+    await client.getJson("/rest/api/content/search", {
+      cql,
+      start,
+      limit,
+      ...(args.expand ? { expand: args.expand } : {}),
+    }),
+    start,
+    limit,
+  );
+  const results = filterAllowed(
+    page.results.map(toPageSummary),
+    (item) => item.spaceKey,
+    client.config.allowedSpaces,
+  );
+  return { ...page, results, size: results.length };
+}
+
+async function getPage(
+  client: ConfluenceClient,
+  id: string,
+  includeStorage: boolean,
+): Promise<PageDetail> {
+  const expand = ["ancestors", "space"];
+  if (includeStorage) expand.push("body.storage");
+  const raw = asRecord(
+    await client.getJson(`/rest/api/content/${encodeURIComponent(id)}`, {
+      expand: expand.join(","),
+    }),
+  );
+  const page = toPageDetail(raw);
+  assertSpaceAllowed(page.spaceKey, client.config.allowedSpaces);
+  return page;
+}
+
+async function listAttachments(
+  client: ConfluenceClient,
+  id: string,
+  start: number,
+  limit: number,
+): Promise<Paginated<AttachmentSummary>> {
+  await assertPageInAllowlist(client, id);
+  const page = asPaginated<unknown>(
+    await client.getJson(`/rest/api/content/${encodeURIComponent(id)}/child/attachment`, {
+      start,
+      limit,
+    }),
+    start,
+    limit,
+  );
+  const results = page.results.map((raw) => {
+    const record = asRecord(raw);
+    return { id: String(record.id ?? ""), title: String(record.title ?? "") };
+  });
+  return { ...page, results, size: results.length };
 }
 
 async function assertPageInAllowlist(client: ConfluenceClient, id: string): Promise<void> {
   if (!client.config.allowedSpaces || client.config.allowedSpaces.length === 0) return;
-  await getPage(client, { id, body: "none" });
+  await getPage(client, id, false);
 }
 
 function clampLimit(limit: number | undefined): number {
@@ -389,16 +244,6 @@ function clampLimit(limit: number | undefined): number {
 
 function escapeCql(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function toSpaceSummary(raw: unknown): SpaceSummary {
-  const record = asRecord(raw);
-  return {
-    id: String(record.id ?? ""),
-    key: String(record.key ?? ""),
-    name: String(record.name ?? ""),
-    type: String(record.type ?? "global"),
-  };
 }
 
 function toPageSummary(raw: unknown): PageSummary {
@@ -414,76 +259,35 @@ function toPageSummary(raw: unknown): PageSummary {
 
 function toPageDetail(raw: Record<string, unknown>): PageDetail {
   const space = asRecord(raw.space);
-  const version = raw.version ? toPageVersion(raw.version) : null;
   const ancestorsRaw = Array.isArray(raw.ancestors) ? raw.ancestors : [];
-  const metadata = asRecord(raw.metadata);
-  const labelsContainer = asRecord(metadata.labels);
-  const labels = Array.isArray(labelsContainer.results)
-    ? labelsContainer.results
-        .map((item) => {
-          const rec = asRecord(item);
-          return typeof rec.name === "string" ? rec.name : "";
-        })
-        .filter((name) => name.length > 0)
-    : [];
   const body = asRecord(raw.body);
   const storage = asRecord(body.storage);
-  const view = asRecord(body.view);
-  const links = asRecord(raw._links);
-  const bodyOut: PageDetail["body"] = {
-    ...(typeof storage.value === "string" ? { storage: storage.value } : {}),
-    ...(typeof view.value === "string" ? { view: view.value } : {}),
-  };
   return {
     id: String(raw.id ?? ""),
     type: String(raw.type ?? "page"),
     title: String(raw.title ?? ""),
     spaceKey: String(space.key ?? ""),
-    spaceName: typeof space.name === "string" ? space.name : null,
-    version,
     ancestors: ancestorsRaw.map((item) => {
       const rec = asRecord(item);
       return { id: String(rec.id ?? ""), title: String(rec.title ?? "") };
     }),
-    labels,
-    body: bodyOut,
-    webui: typeof links.webui === "string" ? links.webui : null,
+    body: typeof storage.value === "string" ? { storage: storage.value } : {},
   };
 }
 
 function toPageVersion(raw: unknown): PageVersion {
   const record = asRecord(raw);
   const by = record.by !== undefined ? record.by : record.author;
+  const byRecord = asRecord(by);
   return {
     number: typeof record.number === "number" ? record.number : 0,
     when: typeof record.when === "string" ? record.when : null,
-    author: displayNameOf(by),
-    username: usernameOf(by),
+    author: typeof byRecord.displayName === "string"
+      ? byRecord.displayName
+      : typeof byRecord.username === "string"
+        ? byRecord.username
+        : null,
+    username: typeof byRecord.username === "string" ? byRecord.username : null,
     message: typeof record.message === "string" ? record.message : null,
   };
-}
-
-function toAttachmentSummary(raw: unknown): AttachmentSummary {
-  const record = asRecord(raw);
-  const extensions = asRecord(record.extensions);
-  const links = asRecord(record._links);
-  return {
-    id: String(record.id ?? ""),
-    title: String(record.title ?? ""),
-    mediaType: typeof extensions.mediaType === "string" ? extensions.mediaType : null,
-    fileSize: typeof extensions.fileSize === "number" ? extensions.fileSize : null,
-    downloadPath: typeof links.download === "string" ? links.download : null,
-  };
-}
-
-function displayNameOf(value: unknown): string | null {
-  const record = asRecord(value);
-  if (typeof record.displayName === "string") return record.displayName;
-  if (typeof record.username === "string") return record.username;
-  return null;
-}
-
-function usernameOf(value: unknown): string | null {
-  const record = asRecord(value);
-  return typeof record.username === "string" ? record.username : null;
 }
