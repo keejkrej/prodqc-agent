@@ -66,7 +66,7 @@ Shareable objects for the cross-lab loop (no protocol text):
 - `outcome-summary.json` — counts for the structured variant key (no `notes`, no values)
 - variant field tables — extract/compare two fictional labs under [../../variant-table/fixtures/](../../variant-table/fixtures/)
 
-Local graph (not shared): `lab-ontology.json`. `Dataset ran_under ProtocolVersion` is how a QC plate file points at wiki page `N101` v2. Methods vs wiki uses the same field tables; see [docs/lab-ontology.md](../../../../docs/lab-ontology.md).
+Local graph (not shared): `lab-ontology.json`. `pr2-qc-mapping.json` shows a PR 2-shaped `QCMeasurement` + `Run` becoming `Dataset ran_under ProtocolVersion` (wiki page `N101` v2). Methods vs wiki uses the same field tables; see [docs/lab-ontology.md](../../../../docs/lab-ontology.md).
 
 See [docs/cross-lab-loop.md](../../../../docs/cross-lab-loop.md).
 

@@ -5,7 +5,9 @@ import { describe, it } from "node:test"
 import { fileURLToPath } from "node:url"
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const graphPath = path.join(here, "../../examples/SYNTHETIC-ribogreen-ee/lab-ontology.json")
+const exampleDir = path.join(here, "../../examples/SYNTHETIC-ribogreen-ee")
+const graphPath = path.join(exampleDir, "lab-ontology.json")
+const mappingPath = path.join(exampleDir, "pr2-qc-mapping.json")
 
 interface Endpoint {
   readonly kind: string
@@ -73,5 +75,34 @@ describe("synthetic lab ontology", () => {
     assert.equal(protocol?.page_id, "N101")
     assert.equal(protocol?.version, 2)
     assert.equal(dataset?.owner.startsWith("person:"), true)
+  })
+
+  it("joins a PR 2-shaped QCMeasurement onto Dataset ran_under ProtocolVersion", () => {
+    const mapping = JSON.parse(readFileSync(mappingPath, "utf8")) as {
+      readonly pr2: {
+        readonly run: { readonly id: string; readonly protocol_version_id: string }
+        readonly qc_measurement: {
+          readonly run_id: string
+          readonly raw_file_uri: string
+          readonly measured_at: string
+        }
+        readonly operator: { readonly id: string; readonly role: string; readonly name?: string }
+      }
+      readonly ontology: {
+        readonly dataset: { readonly path: string; readonly date: string; readonly owner: string }
+        readonly protocol_version: { readonly id: string; readonly pr2_protocol_version_id: string }
+        readonly edge: { readonly type: string }
+      }
+    }
+    assert.equal(mapping.pr2.qc_measurement.run_id, mapping.pr2.run.id)
+    assert.equal(mapping.pr2.qc_measurement.raw_file_uri, mapping.ontology.dataset.path)
+    assert.equal(mapping.pr2.qc_measurement.measured_at.startsWith(mapping.ontology.dataset.date), true)
+    assert.equal(mapping.pr2.run.protocol_version_id, mapping.ontology.protocol_version.pr2_protocol_version_id)
+    assert.equal(mapping.ontology.edge.type, "ran_under")
+    assert.equal(mapping.pr2.operator.role, "operator")
+    assert.equal("name" in mapping.pr2.operator, false)
+    const graphDataset = graph.entities.datasets[0]
+    assert.equal(graphDataset?.path, mapping.ontology.dataset.path)
+    assert.equal(graphDataset?.owner, mapping.pr2.operator.id)
   })
 })

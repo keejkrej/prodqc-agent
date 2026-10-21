@@ -25,7 +25,7 @@
     "datasets": [
       {
         "id": "ds-north-plate-1",
-        "path": "runs/synthetic/north-plate-1.csv",
+        "path": "s3://simulated-prodqc/synthetic-ribogreen/north-plate-1.json",
         "date": "2026-01-15",
         "owner": "person:operator"
       }

@@ -62,7 +62,26 @@ The skill’s local QC envelope (`protocol_page_id`, `protocol_version`, structu
 
 PR 2’s `ProtocolVersion.id` (Crockford, semver family) and the wiki `(page_id, version)` are two identifiers for the same node once a lab records both. Until they do, `ran_under` can be `stated` against the structured-draft id and the wiki pair stays an open question.
 
-Synthetic mapping (RiboGreen plate from the worked example): dataset `ds-north-plate-1` `ran_under` `pv-N101-v2`, provenance `stated`, because the QC envelope names page `N101` version `2`.
+Worked synthetic objects: [pr2-qc-mapping.json](../skills/protocol-consolidation/examples/SYNTHETIC-ribogreen-ee/pr2-qc-mapping.json). A PR 2-shaped `QCMeasurement` (`raw_file_uri`, `measured_at`, `run_id`) plus its `Run.protocol_version_id` becomes:
+
+```json
+{
+  "dataset": {
+    "id": "ds-north-plate-1",
+    "path": "s3://simulated-prodqc/synthetic-ribogreen/north-plate-1.json",
+    "date": "2026-01-15",
+    "owner": "person:operator"
+  },
+  "edge": {
+    "type": "ran_under",
+    "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+    "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+    "provenance": { "kind": "stated" }
+  }
+}
+```
+
+`stated` because the run record names the protocol version. The wiki pair on that node is page `N101` version `2` (skill QC envelope). The PR 2 Crockford id is recorded alongside as `pr2_protocol_version_id` until a lab treats them as one node.
 
 ## Methods vs wiki
 
