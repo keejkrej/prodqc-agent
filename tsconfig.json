@@ -18,10 +18,10 @@
     "verbatimModuleSyntax": true,
     "baseUrl": ".",
     "paths": {
-      "effect": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/effect"],
-      "effect/*": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/effect/*"]
+      "effect": ["./node_modules/effect"],
+      "effect/*": ["./node_modules/effect/*"]
     },
-    "typeRoots": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

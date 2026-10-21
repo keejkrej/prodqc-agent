@@ -1,0 +1,162 @@
+{
+  "draft": true,
+  "schema_version": "0.1.0-draft",
+  "disclaimer": "DRAFT first-pass structure. ALL VALUES SIMULATED. Not a real production protocol.",
+  "protocol_id": "pv_lnp_microfluidic_0.1.0",
+  "family": "lnp_microfluidic",
+  "semver": "0.1.0",
+  "status": "draft",
+  "product_line": "lnp_formulation",
+  "materials": [
+    {
+      "id": "ionizable_lipid",
+      "role": "ionizable_lipid",
+      "name": "SIMULATED ionizable lipid",
+      "lot_number": "SIM-LIP-2026-11-A",
+      "available_mg": 250,
+      "expires_at": "2027-11-03",
+      "simulated": true
+    },
+    {
+      "id": "helper_dspc",
+      "role": "helper_lipid",
+      "name": "SIMULATED DSPC",
+      "lot_number": "SIM-DSPC-2026-11-A",
+      "available_mg": 80,
+      "expires_at": "2027-11-03",
+      "simulated": true
+    },
+    {
+      "id": "cholesterol",
+      "role": "cholesterol",
+      "name": "SIMULATED cholesterol",
+      "lot_number": "SIM-CHOL-2026-11-A",
+      "available_mg": 120,
+      "expires_at": "2027-11-03",
+      "simulated": true
+    },
+    {
+      "id": "peg_lipid",
+      "role": "peg_lipid",
+      "name": "SIMULATED PEG-lipid",
+      "lot_number": "SIM-PEG-2026-11-A",
+      "available_mg": 40,
+      "expires_at": "2027-11-03",
+      "simulated": true
+    },
+    {
+      "id": "mrna_payload",
+      "role": "nucleic_acid_payload",
+      "name": "SIMULATED mRNA payload",
+      "lot_number": "SIM-MRNA-2026-11-A",
+      "available_mg": 5,
+      "expires_at": "2027-05-03",
+      "simulated": true
+    }
+  ],
+  "formulation": {
+    "simulated": true,
+    "n_p_ratio": 6,
+    "total_flow_rate_ml_min": 12,
+    "flow_rate_ratio_aqueous_to_organic": 3,
+    "lipid_molar_percent": {
+      "ionizable_lipid": 50,
+      "helper_dspc": 10,
+      "cholesterol": 38.5,
+      "peg_lipid": 1.5
+    }
+  },
+  "process_steps": [
+    {
+      "key": "microfluidic_mix",
+      "ordinal": 1,
+      "instrument_role": "microfluidic_mixer",
+      "expected_duration_minutes": 12,
+      "params": {
+        "total_flow_rate_ml_min": { "type": "number", "min": 4, "max": 20 },
+        "flow_rate_ratio_aqueous_to_organic": { "type": "number", "min": 1, "max": 5 }
+      }
+    },
+    {
+      "key": "dls_t0",
+      "ordinal": 2,
+      "instrument_role": "dls",
+      "expected_duration_minutes": 8,
+      "params": {
+        "temperature_c": { "type": "number", "min": 20, "max": 25 }
+      }
+    },
+    {
+      "key": "ribogreen_ee",
+      "ordinal": 3,
+      "instrument_role": "ribogreen_plate_reader",
+      "expected_duration_minutes": 20,
+      "params": {
+        "dilution_factor": { "type": "number", "min": 1, "max": 200 }
+      }
+    },
+    {
+      "key": "dls_t24h",
+      "ordinal": 4,
+      "instrument_role": "dls",
+      "expected_duration_minutes": 8,
+      "params": {
+        "hold_hours": { "type": "number", "min": 24, "max": 24 }
+      }
+    },
+    {
+      "key": "qc_disposition",
+      "ordinal": 5,
+      "instrument_role": "none",
+      "expected_duration_minutes": 5,
+      "params": {}
+    }
+  ],
+  "qc_assays": [
+    { "assay": "dls_size", "metric": "z_avg_nm", "timepoint": "t0", "unit": "nm" },
+    { "assay": "dls_pdi", "metric": "pdi", "timepoint": "t0", "unit": "dimensionless" },
+    { "assay": "ribogreen_ee", "metric": "ee_pct", "timepoint": "t0", "unit": "percent" },
+    { "assay": "dls_size", "metric": "z_avg_nm", "timepoint": "t24h", "unit": "nm" }
+  ],
+  "release_specs": {
+    "dls_z_avg_nm_range": [70, 140],
+    "dls_pdi_max": 0.2,
+    "ribogreen_ee_pct_min": 90,
+    "size_drift_nm_max": 5,
+    "borderline_bands": {
+      "dls_pdi_max": 0.25,
+      "ribogreen_ee_pct_min": 85,
+      "size_drift_nm_max": 10
+    }
+  },
+  "decision_points": {
+    "qc_disposition": {
+      "rule_id": "lnp_qc_disposition_v0_draft",
+      "simulated": true,
+      "description": "DRAFT first-pass rule: classify the batch as in-spec, borderline, or hard-fail from PDI, encapsulation efficiency, and 24 h size drift, then map that class through the work order's downstream use.",
+      "rules_by_downstream_use": {
+        "screening": {
+          "in_spec": "release_for_cell_experiment",
+          "borderline": "use_with_note",
+          "hard_fail": "remake"
+        },
+        "in_vivo": {
+          "in_spec": "release_for_cell_experiment",
+          "borderline": "remake",
+          "hard_fail": "remake"
+        }
+      }
+    }
+  },
+  "simulation": {
+    "label": "ALL VALUES SIMULATED",
+    "mixer": {
+      "total_flow_rate_ml_min": 12,
+      "flow_rate_ratio_aqueous_to_organic": 3,
+      "temperature_c": 22
+    },
+    "dls_t0": { "z_avg_nm": 94, "pdi": 0.21 },
+    "ribogreen": { "ee_pct": 87 },
+    "dls_t24h": { "z_avg_nm": 101 }
+  }
+}

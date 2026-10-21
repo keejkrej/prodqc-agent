@@ -31,6 +31,7 @@ import type {
   ConstructClassKey,
   Design,
   Deviation,
+  DownstreamStudyType,
   ExpressionHost,
   InstrumentEvent,
   ParameterValue,
@@ -382,6 +383,11 @@ export interface WorkOrder {
   readonly protocolStepKey: string
   readonly targetInstrumentId?: string
   readonly plannedParams: Readonly<Record<string, ParameterValue>>
+  /**
+   * Structured downstream use that drives LNP QC disposition.
+   * Never read from prose `notes`.
+   */
+  readonly downstreamStudyType: DownstreamStudyType
 }
 
 export interface ExecutionLiaisonAgentShape {
