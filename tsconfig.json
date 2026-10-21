@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "preserveSymlinks": true,
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".",
+    "paths": {
+      "effect": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/effect"],
+      "effect/*": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/effect/*"]
+    },
+    "typeRoots": ["/home/droid/.cache/projects/prodqc-agent-65027faf/node_modules/@types"]
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

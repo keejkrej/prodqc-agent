@@ -1,0 +1,20 @@
+{
+  "name": "prodqc-agent",
+  "version": "0.1.0",
+  "description": "Effect-TS domain, multi-agent, transparency, insurance, and self-improvement abstractions for multi-modality bio-production & QC (protein, LNP, and future modalities)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "deps:ext4": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && mkdir -p \"$PROJECT_CACHE_DIR\" && cp package.json \"$PROJECT_CACHE_DIR/package.json\" && npm --prefix \"$PROJECT_CACHE_DIR\" install --cache \"$PROJECT_CACHE_DIR/npm\" --no-audit --no-fund",
+    "typecheck": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && node --preserve-symlinks \"$PROJECT_CACHE_DIR/node_modules/typescript/bin/tsc\" --noEmit",
+    "test": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && node --preserve-symlinks \"$PROJECT_CACHE_DIR/node_modules/typescript/bin/tsc\" --noEmit false --rewriteRelativeImportExtensions true --outDir \"$PROJECT_CACHE_DIR/dist\" && node --test \"$PROJECT_CACHE_DIR/dist/tests/abstractions.test.js\""
+  },
+  "dependencies": {
+    "effect": "^3.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3"
+  }
+}
