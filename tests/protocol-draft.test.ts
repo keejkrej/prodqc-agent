@@ -6,17 +6,23 @@ import { describe, it } from "node:test"
 import { Effect } from "effect"
 import {
   assembleSourcedDraft,
+  buildPitchSummary,
+  countDraftDifferences,
   decodeSourcedDraftProtocolSync,
   extractDraftFields,
   extractPdfText,
+  formatPitchSummary,
   GroundedProtocolDraftInferenceLive,
   isGroundedPointer,
   listProtocolSourceFiles,
   loadProtocolSources,
+  loadReviewCounts,
+  parseReviewCounts,
   ProtocolSourceCountError,
   runProtocolDrafting,
   toUcum,
-  writeSimplePdf
+  writeSimplePdf,
+  type SummaryDraftView
 } from "../src/index.ts"
 
 const FIXTURE_DIR = path.join(process.cwd(), "fixtures/protocol-draft/versions")
@@ -260,5 +266,136 @@ describe("lab-pilot protocol drafting CLI (SYNTHETIC fixtures only)", () => {
     const tmp = await mkdtemp(path.join(os.tmpdir(), "protocol-draft-one-"))
     await writeFile(path.join(tmp, "only.txt"), "SYNTHETIC\n")
     await assert.rejects(() => listProtocolSourceFiles(tmp), ProtocolSourceCountError)
+  })
+
+  it("emits a counts-only pitch summary with no source text, values, or names", async () => {
+    const outputDir = await mkdtemp(path.join(os.tmpdir(), "protocol-draft-summary-"))
+    const result = await Effect.runPromise(runFixtures(FIXTURE_DIR, outputDir))
+    const summary = result.summary
+    const text = result.summaryText
+    assert.equal(summary.versions, 3)
+    assert.deepEqual(summary.steps_per_version, [4, 4, 4])
+    assert.equal(summary.differences.value, 4)
+    assert.equal(summary.differences.unit, 1)
+    assert.equal(summary.differences.order, 0)
+    assert.equal(summary.differences.missing_step, 0)
+    assert.equal(summary.differences.endpoint_wording, 1)
+    assert.equal(summary.open_questions.total, 5)
+    assert.equal(summary.open_questions.missing_unit, 1)
+    assert.equal(summary.open_questions.conflicting_values, 3)
+    assert.equal(summary.open_questions.vague_endpoint, 1)
+    assert.equal(summary.review.supplied, false)
+    assert.equal(summary.review.corrected, 0)
+    assert.match(text, /^PITCH SUMMARY\ncounts only; no protocol text, values, or names\n/)
+    assert.match(text, /versions 3/)
+    assert.match(text, /steps_per_version 4 4 4/)
+
+    const sources = await loadProtocolSources(FIXTURE_DIR)
+    const leakTokens = [
+      "ionizable lipid",
+      "DSPC",
+      "cholesterol",
+      "PEG-lipid",
+      "mRNA",
+      "mL/min",
+      "looks good",
+      "remake the batch",
+      "until the suspension",
+      "lnp_microfluidic",
+      "RiboGreen",
+      "Microfluidic mix",
+      "N/P ratio",
+      "10 mL/min",
+      "12 mL/min",
+      "0.25",
+      "38.5",
+      "cloudy"
+    ]
+    for (const source of sources) {
+      leakTokens.push(source.basename)
+      for (const line of source.lines) {
+        const trimmed = line.text.trim()
+        if (trimmed.length >= 12) {
+          leakTokens.push(trimmed)
+        }
+      }
+    }
+    for (const token of leakTokens) {
+      assert.equal(
+        text.toLowerCase().includes(token.toLowerCase()),
+        false,
+        `pitch summary leaked source token: ${token}`
+      )
+    }
+    const written = JSON.parse(await readFile(result.summaryPath, "utf8")) as {
+      versions: number
+      differences: { value: number }
+    }
+    assert.equal(written.versions, 3)
+    assert.equal(written.differences.value, 4)
+  })
+
+  it("counts colleague-review corrections without copying review notes", async () => {
+    const outputDir = await mkdtemp(path.join(os.tmpdir(), "protocol-draft-review-"))
+    const reviewPath = path.join(
+      process.cwd(),
+      "fixtures/protocol-draft/SYNTHETIC-colleague-review.json"
+    )
+    const result = await Effect.runPromise(
+      runProtocolDrafting(FIXTURE_DIR, outputDir, MODEL, { reviewPath }).pipe(
+        Effect.provide(GroundedProtocolDraftInferenceLive)
+      )
+    )
+    assert.equal(result.summary.review.supplied, true)
+    assert.equal(result.summary.review.items, 4)
+    assert.equal(result.summary.review.corrected, 2)
+    assert.equal(result.summary.review.accepted, 1)
+    assert.equal(result.summary.review.deferred, 1)
+    assert.match(result.summaryText, /review.supplied 1/)
+    assert.match(result.summaryText, /review.corrected 2/)
+
+    const dirtyReview = {
+      schema: "protocol-draft-review-v0",
+      notes: "Use Total flow rate: 12 mL/min and mix until the suspension is clear.",
+      items: [{ outcome: "corrected", reason: "ionizable lipid N/P ratio: 6" }]
+    }
+    const parsed = parseReviewCounts(dirtyReview)
+    const withNotes = formatPitchSummary(buildPitchSummary(result.drafts, parsed))
+    assert.equal(withNotes.includes("12 mL/min"), false)
+    assert.equal(withNotes.includes("ionizable"), false)
+    assert.equal(withNotes.includes("until the suspension"), false)
+    assert.equal(withNotes.includes("N/P"), false)
+    const loaded = await loadReviewCounts(reviewPath)
+    assert.equal(loaded.corrected, 2)
+  })
+
+  it("counts order and missing-step differences without emitting step names", () => {
+    const base: SummaryDraftView = {
+      steps: [
+        { key: "a", ordinal: 1, observation: null, branchFingerprint: "" },
+        { key: "b", ordinal: 2, observation: null, branchFingerprint: "" }
+      ],
+      quantities: [],
+      openQuestionKinds: []
+    }
+    const reordered: SummaryDraftView = {
+      steps: [
+        { key: "a", ordinal: 2, observation: null, branchFingerprint: "" },
+        { key: "b", ordinal: 1, observation: null, branchFingerprint: "" }
+      ],
+      quantities: [],
+      openQuestionKinds: []
+    }
+    const missing: SummaryDraftView = {
+      steps: [{ key: "a", ordinal: 1, observation: null, branchFingerprint: "" }],
+      quantities: [],
+      openQuestionKinds: []
+    }
+    const orderCounts = countDraftDifferences([base, reordered])
+    assert.equal(orderCounts.order, 2)
+    assert.equal(orderCounts.missing_step, 0)
+    const missingCounts = countDraftDifferences([base, missing])
+    assert.equal(missingCounts.missing_step, 1)
+    assert.equal(missingCounts.order, 0)
   })
 })
