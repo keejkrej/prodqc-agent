@@ -61,3 +61,5 @@ The drafter:
 - `--summary-only` prints counts only (versions, steps per version, differences by category, open questions by category, and review corrections if `--review` is supplied). That output is what is safe to put on a pitch slide.
 - Treats `input/` and `output/` as private. Only SYNTHETIC fixtures under `fixtures/protocol-draft/` are committed.
 
+How to collect 2–5 versions of one family from a self-hosted wiki and a laptop NAS (read-only, lab machine, no collector in this repo): [docs/collection-method.md](docs/collection-method.md).
+
