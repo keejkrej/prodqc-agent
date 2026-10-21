@@ -1,0 +1,33 @@
+SYNTHETIC FIXTURE — lab notebook excerpt, not a real protocol.
+
+Protocol family: lnp_microfluidic
+Product line: lnp_formulation
+Version: 1.2.0
+Title: SYNTHETIC lab notes on microfluidic LNP mixing
+
+Materials were the same SYNTHETIC set as the SOP.
+
+Formulation notes:
+N/P ratio: 6
+We ran TFR 12 mL/min today; yesterday someone used TFR 10 mL/min.
+Total flow rate: 12 mL/min
+Flow rate ratio aqueous:organic: 3:1
+
+Process:
+1. Microfluidic mix
+Mix until it looks good
+If still cloudy after 20 min, remake the batch.
+
+2. DLS t0
+PDI limit 0.25
+Older note: PDI maximum 0.20
+
+3. RiboGreen encapsulation
+EE 85%
+Encapsulation target: 90 %
+
+4. DLS t+24 h
+Size drift specification: maximum 5 nm
+
+QC:
+Z-average range: 70-140 nm

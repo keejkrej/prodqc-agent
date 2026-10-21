@@ -3,3 +3,7 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# Lab-pilot protocol drafting: never commit real protocol inputs or outputs.
+/input/
+/output/

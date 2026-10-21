@@ -1,0 +1,10 @@
+{
+  "schema": "protocol-draft-review-v0",
+  "synthetic": true,
+  "items": [
+    { "outcome": "corrected" },
+    { "outcome": "corrected" },
+    { "outcome": "accepted" },
+    { "outcome": "deferred" }
+  ]
+}
