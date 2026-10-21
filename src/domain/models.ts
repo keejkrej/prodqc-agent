@@ -419,6 +419,7 @@ export const QCAssay = Schema.Literal(
   "endotoxin",
   "dls_size",
   "dls_pdi",
+  "dls_size_drift",
   "ribogreen_ee",
   "zeta"
 )
@@ -432,6 +433,7 @@ export const QCMetric = Schema.Literal(
   "z_avg_nm",
   "pdi",
   "ee_pct",
+  "size_drift_nm",
   "zeta_mv",
   "concentration_mg_ml"
 )

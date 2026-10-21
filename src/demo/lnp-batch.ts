@@ -17,6 +17,7 @@ import {
 } from "../instruments/contracts.ts"
 import { makeSimulatedInstrumentLayers } from "../instruments/simulated.ts"
 import {
+  deriveDlsSizeDriftMeasurement,
   extractLnpQcEvidence,
   LNP_FORMULATION_AGENT_ID,
   LnpQcPolicyLive,
@@ -194,11 +195,19 @@ export const runOneSimulatedLnpBatch = (
       releaseSpec: context.releaseSpec
     })
 
+    const sizeDrift = deriveDlsSizeDriftMeasurement({
+      measurementId: context.ids.sizeDriftMeasurementId,
+      t0ZAvg: dlsT0.zAverage,
+      t24hZAvg: dlsT24h.zAverage,
+      specMax: protocol.release_specs.size_drift_nm_max
+    })
+
     const measurements: QCMeasurement[] = [
       dlsT0.zAverage,
       ...(dlsT0.pdi ? [dlsT0.pdi] : []),
       ribo.encapsulationEfficiency,
-      dlsT24h.zAverage
+      dlsT24h.zAverage,
+      sizeDrift
     ]
 
     for (const measurement of measurements) {
@@ -237,6 +246,11 @@ export const runOneSimulatedLnpBatch = (
         downstream_study_type: decision.downstreamStudyType,
         classification: decision.classification,
         borderline_batch: decision.borderlineBatch,
+        specs_evaluated: decision.specMissSummary.specsEvaluated,
+        specs_missed: decision.specMissSummary.specsMissed,
+        all_misses_within_borderline_band:
+          decision.specMissSummary.allMissesWithinBorderlineBand,
+        spec_miss_summary: decision.specMissSummary.text,
         pdi: decision.evidence.pdi.value,
         pdi_max: decision.thresholds.pdiMax,
         pdi_borderline_max: decision.thresholds.pdiBorderlineMax,

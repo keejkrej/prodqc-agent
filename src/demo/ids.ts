@@ -44,6 +44,7 @@ export interface DemoEntityIds {
   readonly pdiMeasurementId: QCMeasurementId
   readonly eeMeasurementId: QCMeasurementId
   readonly zAvgT24hMeasurementId: QCMeasurementId
+  readonly sizeDriftMeasurementId: QCMeasurementId
   readonly workOrderId: string
 }
 
@@ -79,6 +80,7 @@ export const makeDemoEntityIds = (lane: DemoLane): DemoEntityIds => {
     pdiMeasurementId: branded("qcm_", body("QPD")),
     eeMeasurementId: branded("qcm_", body("QEE")),
     zAvgT24hMeasurementId: branded("qcm_", body("QZ1")),
+    sizeDriftMeasurementId: branded("qcm_", body("QDR")),
     workOrderId: `wo_sim_lnp_${lane.toLowerCase()}`
   }
 }

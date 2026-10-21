@@ -24,12 +24,20 @@ describe("SIMULATED LNP batch end-to-end", () => {
     const pdi = screening.measurements.find((row) => row.metric === "pdi")
     const ee = screening.measurements.find((row) => row.metric === "ee_pct")
     const zAvg = screening.measurements.filter((row) => row.metric === "z_avg_nm")
+    const drift = screening.measurements.find((row) => row.metric === "size_drift_nm")
     assert.equal(pdi?.value, 0.21)
     assert.equal(pdi?.verdict, "fail")
     assert.equal(ee?.value, 87)
     assert.equal(ee?.verdict, "fail")
     assert.equal(zAvg[0]?.value, 94)
+    assert.equal(zAvg[0]?.verdict, "pass")
     assert.equal(zAvg[1]?.value, 101)
+    assert.equal(zAvg[1]?.verdict, "pass")
+    assert.equal(drift?.assay, "dls_size_drift")
+    assert.equal(drift?.value, 7)
+    assert.equal(drift?.verdict, "fail")
+    assert.equal(drift?.spec_max, 5)
+    assert.equal(screening.measurements.length, 5)
 
     for (const result of [screening, inVivo]) {
       const decided = result.auditLog.find((entry) => entry.payload._tag === "qc.decided")
@@ -39,6 +47,13 @@ describe("SIMULATED LNP batch end-to-end", () => {
       }
       assert.equal(decided.payload.simulated, true)
       assert.equal(decided.payload.borderline_batch, true)
+      assert.equal(decided.payload.specs_evaluated, 4)
+      assert.equal(decided.payload.specs_missed, 3)
+      assert.equal(decided.payload.all_misses_within_borderline_band, true)
+      assert.equal(
+        decided.payload.spec_miss_summary,
+        "3 of 4 specs missed, all within the borderline band"
+      )
       assert.equal(decided.payload.pdi, 0.21)
       assert.equal(decided.payload.ee_pct, 87)
       assert.equal(decided.payload.size_drift_nm, 7)
@@ -54,6 +69,17 @@ describe("SIMULATED LNP batch end-to-end", () => {
         result.instrumentEvents.every((event) => event.payload["simulated"] === true),
         true
       )
+      const measured = result.auditLog.filter((entry) => entry.payload._tag === "qc.measured")
+      assert.equal(measured.length, 5)
+      const driftMeasured = measured.find(
+        (entry) =>
+          entry.payload._tag === "qc.measured" &&
+          entry.entity_id === result.context.ids.sizeDriftMeasurementId
+      )
+      assert.ok(driftMeasured)
+      if (driftMeasured?.payload._tag === "qc.measured") {
+        assert.equal(driftMeasured.payload.verdict, "fail")
+      }
     }
   })
 

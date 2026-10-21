@@ -59,11 +59,20 @@ describe("LNP QC disposition policy (deterministic, no LLM)", () => {
     assert.equal(decision.simulated, true)
     assert.equal(decision.classification, "borderline")
     assert.equal(decision.borderlineBatch, true)
+    assert.equal(decision.specMissSummary.specsEvaluated, 4)
+    assert.equal(decision.specMissSummary.specsMissed, 3)
+    assert.equal(decision.specMissSummary.allMissesWithinBorderlineBand, true)
+    assert.equal(
+      decision.specMissSummary.text,
+      "3 of 4 specs missed, all within the borderline band"
+    )
     assert.equal(decision.action, "use_with_note")
     assert.equal(decision.evidence.pdi.status, "borderline_miss")
     assert.equal(decision.evidence.eePct.status, "borderline_miss")
     assert.equal(decision.evidence.sizeDriftNm.status, "borderline_miss")
     assert.equal(decision.evidence.sizeDriftNm.value, 7)
+    assert.equal(decision.evidence.zAvgT0.status, "in_spec")
+    assert.equal(decision.evidence.zAvgT24h.status, "in_spec")
     assert.equal(decision.thresholds.pdiMax, 0.2)
     assert.equal(decision.thresholds.eePctMin, 90)
     assert.equal(decision.thresholds.sizeDriftNmMax, 5)
@@ -90,6 +99,7 @@ describe("LNP QC disposition policy (deterministic, no LLM)", () => {
     const inVivo = decide("in_vivo", inSpec)
     assert.equal(screening.classification, "in_spec")
     assert.equal(screening.borderlineBatch, false)
+    assert.equal(screening.specMissSummary.text, "0 of 4 specs missed")
     assert.equal(screening.action, "release_for_cell_experiment")
     assert.equal(inVivo.action, "release_for_cell_experiment")
   })
@@ -107,6 +117,22 @@ describe("LNP QC disposition policy (deterministic, no LLM)", () => {
     assert.equal(decision.evidence.pdi.status, "hard_fail")
     assert.equal(decision.evidence.eePct.status, "hard_fail")
     assert.equal(decision.evidence.sizeDriftNm.status, "hard_fail")
+    assert.equal(decision.specMissSummary.specsMissed, 3)
+    assert.equal(decision.specMissSummary.allMissesWithinBorderlineBand, false)
+    assert.equal(decision.specMissSummary.text, "3 of 4 specs missed")
+  })
+
+  it("computes a one-spec miss summary from the actual results", () => {
+    const decision = decide("screening", {
+      dlsT0ZAvgNm: 90,
+      dlsT0Pdi: 0.21,
+      ribogreenEePct: 92,
+      dlsT24hZAvgNm: 91
+    })
+    assert.equal(
+      decision.specMissSummary.text,
+      "1 of 4 specs missed, all within the borderline band"
+    )
   })
 
   it("exposes decide as a pure function without requiring Effect or inference", () => {

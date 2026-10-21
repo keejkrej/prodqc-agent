@@ -1,9 +1,9 @@
 import { Context, Effect, Layer } from "effect"
-import type { Rfc3339UtcTimestamp, UserId } from "../domain/ids.ts"
-import type {
-  DownstreamStudyType,
-  LnpQcDispositionAction,
-  QCMeasurement
+import type { QCMeasurementId, Rfc3339UtcTimestamp, S3ObjectUri, UserId } from "../domain/ids.ts"
+import {
+  QCMeasurement,
+  type DownstreamStudyType,
+  type LnpQcDispositionAction
 } from "../domain/models.ts"
 import type { LnpDraftProtocol } from "../protocol/lnp-draft.ts"
 
@@ -31,6 +31,15 @@ export interface LnpQcMetricAssessment {
   readonly simulated: true
 }
 
+export interface LnpSpecMissSummary {
+  readonly specsEvaluated: number
+  readonly specsMissed: number
+  readonly borderlineMissCount: number
+  readonly hardFailCount: number
+  readonly allMissesWithinBorderlineBand: boolean
+  readonly text: string
+}
+
 export interface LnpQcDecision {
   readonly action: LnpQcDispositionAction
   readonly ruleId: string
@@ -38,6 +47,7 @@ export interface LnpQcDecision {
   readonly downstreamStudyType: DownstreamStudyType
   readonly classification: LnpBatchClassification
   readonly borderlineBatch: boolean
+  readonly specMissSummary: LnpSpecMissSummary
   readonly thresholds: {
     readonly pdiMax: number
     readonly pdiBorderlineMax: number
@@ -87,6 +97,29 @@ export const extractLnpQcEvidence = (
   }
 }
 
+export const deriveDlsSizeDriftMeasurement = (params: {
+  readonly measurementId: QCMeasurementId
+  readonly t0ZAvg: QCMeasurement
+  readonly t24hZAvg: QCMeasurement
+  readonly specMax: number
+}): QCMeasurement => {
+  const value = Math.abs(params.t24hZAvg.value - params.t0ZAvg.value)
+  return new QCMeasurement({
+    id: params.measurementId,
+    run_id: params.t24hZAvg.run_id,
+    assay: "dls_size_drift",
+    metric: "size_drift_nm",
+    value,
+    unit: "nm",
+    instrument_id: params.t24hZAvg.instrument_id,
+    raw_file_uri: "s3://simulated-prodqc/lnp-demo/dls-t24h-size-drift.json" as S3ObjectUri,
+    spec_min: null,
+    spec_max: params.specMax,
+    verdict: value <= params.specMax ? "pass" : "fail",
+    measured_at: params.t24hZAvg.measured_at
+  })
+}
+
 const classifyMax = (
   value: number,
   specMax: number,
@@ -128,6 +161,41 @@ const overallClassification = (
     return "borderline"
   }
   return "in_spec"
+}
+
+const worseStatus = (left: LnpMetricStatus, right: LnpMetricStatus): LnpMetricStatus => {
+  if (left === "hard_fail" || right === "hard_fail") {
+    return "hard_fail"
+  }
+  if (left === "borderline_miss" || right === "borderline_miss") {
+    return "borderline_miss"
+  }
+  return "in_spec"
+}
+
+export const summarizeGatingSpecMisses = (
+  statuses: ReadonlyArray<LnpMetricStatus>
+): LnpSpecMissSummary => {
+  const specsEvaluated = statuses.length
+  const missed = statuses.filter((status) => status !== "in_spec")
+  const specsMissed = missed.length
+  const borderlineMissCount = missed.filter((status) => status === "borderline_miss").length
+  const hardFailCount = missed.filter((status) => status === "hard_fail").length
+  const allMissesWithinBorderlineBand = specsMissed > 0 && hardFailCount === 0
+  const text =
+    specsMissed === 0
+      ? `${specsMissed} of ${specsEvaluated} specs missed`
+      : allMissesWithinBorderlineBand
+        ? `${specsMissed} of ${specsEvaluated} specs missed, all within the borderline band`
+        : `${specsMissed} of ${specsEvaluated} specs missed`
+  return {
+    specsEvaluated,
+    specsMissed,
+    borderlineMissCount,
+    hardFailCount,
+    allMissesWithinBorderlineBand,
+    text
+  }
 }
 
 export interface DecideLnpQcInput {
@@ -203,13 +271,14 @@ export const decideLnpQc = (input: DecideLnpQcInput): LnpQcDecision => {
     simulated: true
   }
 
-  const classification = overallClassification([
+  const gatingStatuses = [
+    worseStatus(zAvgT0.status, zAvgT24h.status),
     pdi.status,
     eePct.status,
-    sizeDrift.status,
-    zAvgT0.status,
-    zAvgT24h.status
-  ])
+    sizeDrift.status
+  ] as const
+  const classification = overallClassification(gatingStatuses)
+  const specMissSummary = summarizeGatingSpecMisses(gatingStatuses)
   const mapping =
     input.protocol.decision_points.qc_disposition.rules_by_downstream_use[
       input.downstreamStudyType
@@ -224,6 +293,7 @@ export const decideLnpQc = (input: DecideLnpQcInput): LnpQcDecision => {
     downstreamStudyType: input.downstreamStudyType,
     classification,
     borderlineBatch: classification !== "in_spec",
+    specMissSummary,
     thresholds: {
       pdiMax: specs.dls_pdi_max,
       pdiBorderlineMax: bands.dls_pdi_max,

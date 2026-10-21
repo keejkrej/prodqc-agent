@@ -116,7 +116,8 @@
     { "assay": "dls_size", "metric": "z_avg_nm", "timepoint": "t0", "unit": "nm" },
     { "assay": "dls_pdi", "metric": "pdi", "timepoint": "t0", "unit": "dimensionless" },
     { "assay": "ribogreen_ee", "metric": "ee_pct", "timepoint": "t0", "unit": "percent" },
-    { "assay": "dls_size", "metric": "z_avg_nm", "timepoint": "t24h", "unit": "nm" }
+    { "assay": "dls_size", "metric": "z_avg_nm", "timepoint": "t24h", "unit": "nm" },
+    { "assay": "dls_size_drift", "metric": "size_drift_nm", "timepoint": "t24h", "unit": "nm" }
   ],
   "release_specs": {
     "dls_z_avg_nm_range": [70, 140],

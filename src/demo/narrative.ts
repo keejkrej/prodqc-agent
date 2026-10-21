@@ -52,7 +52,8 @@ export const formatBatchNarrative = (result: LnpBatchRunResult): string => {
     `  ${SIMULATED_CLOCK("11:30Z")} EE ${sim.ribogreen.ee_pct}%  (spec ≥ ${decision.thresholds.eePctMin}%)`,
     "",
     "[SIMULATED] DLS t+24h",
-    `  ${SIMULATED_CLOCK("10:00Z +1d")} Z-average ${sim.dls_t24h.z_avg_nm} nm  (t0 ${sim.dls_t0.z_avg_nm} nm, drift ${decision.evidence.sizeDriftNm.value} nm; spec ≤ ${decision.thresholds.sizeDriftNmMax} nm)`,
+    `  ${SIMULATED_CLOCK("10:00Z +1d")} Z-average ${sim.dls_t24h.z_avg_nm} nm  (absolute size vs ${decision.thresholds.zAvgNmMin}–${decision.thresholds.zAvgNmMax} nm)`,
+    `  ${SIMULATED_CLOCK("10:00Z +1d")} derived 24 h size drift ${decision.evidence.sizeDriftNm.value} nm  (spec ≤ ${decision.thresholds.sizeDriftNmMax} nm)`,
     "",
     "Evidence vs explicit thresholds (SIMULATED):",
     metricLine(
@@ -74,8 +75,7 @@ export const formatBatchNarrative = (result: LnpBatchRunResult): string => {
       decision.evidence.sizeDriftNm.status
     ),
     "",
-    `Classification:       ${decision.classification}`,
-    `Borderline batch:     ${decision.borderlineBatch}`,
+    `Specs:                ${decision.specMissSummary.text}`,
     `Rule applied:         ${decision.ruleApplied}`,
     "",
     `DECISION:             ${actionLabel(decision.action)}`,
@@ -103,7 +103,8 @@ const formatAuditEntry = (entry: EventLogEntry): string => {
   if (payload._tag === "qc.decided") {
     return [
       header,
-      `    action=${payload.action}  downstream=${payload.downstream_study_type}  borderline_batch=${payload.borderline_batch}`,
+      `    action=${payload.action}  downstream=${payload.downstream_study_type}`,
+      `    specs=${payload.spec_miss_summary}  borderline_batch=${payload.borderline_batch}`,
       `    rule=${payload.rule_applied}`,
       `    evidence PDI=${payload.pdi} (max ${payload.pdi_max})  EE%=${payload.ee_pct} (min ${payload.ee_pct_min})  drift=${payload.size_drift_nm} nm (max ${payload.size_drift_nm_max})`,
       `    operator=${payload.operator_id}  simulated=${payload.simulated}`,
