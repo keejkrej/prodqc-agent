@@ -62,15 +62,11 @@ describe("ConfluenceClient against a mocked Server REST API", () => {
     assert.match(page.body.view ?? "", /SYNTHETIC size measurement/);
   });
 
-  it("walks children and a depth-limited tree", async () => {
+  it("lists direct child pages", async () => {
     const children = await handlers.get_children({ id: "1001" });
     assert.equal(children.results.length, 2);
-    const shallow = await handlers.get_page_tree({ id: "1001", maxDepth: 1 });
-    assert.equal(shallow.children.length, 2);
-    assert.equal(shallow.children[0]?.children.length, 0);
-    const deep = await handlers.get_page_tree({ id: "1001", maxDepth: 3 });
-    const calibration = deep.children.find((node) => node.id === "1002");
-    assert.equal(calibration?.children[0]?.id, "1003");
+    assert.ok(children.results.some((page) => page.id === "1002"));
+    assert.ok(children.results.some((page) => page.id === "1004"));
   });
 
   it("parses storage links into resolved outgoing edges", async () => {
@@ -81,16 +77,6 @@ describe("ConfluenceClient against a mocked Server REST API", () => {
     assert.equal(pageEdges.find((edge) => edge.title === "Size Measurement")?.toId, "1003");
     assert.equal(pageEdges.find((edge) => edge.title === "Buffer Prep")?.toId, "1004");
     assert.equal(attEdges[0]?.toId, "9001");
-  });
-
-  it("returns attachment metadata and can download to a local folder", async () => {
-    const dir = await mkdtemp(path.join(tmpdir(), "confluence-mcp-"));
-    const page = await handlers.get_attachments({ id: "1002", downloadDir: dir });
-    assert.equal(page.results[0]?.title, "notes.txt");
-    const dest = page.results[0]?.downloadedTo;
-    assert.ok(dest);
-    const body = await readFile(dest, "utf8");
-    assert.equal(body, "SYNTHETIC attachment body\n");
   });
 
   it("returns version history with author and date", async () => {
@@ -204,7 +190,7 @@ describe("rate-limit 429 retry", () => {
       });
     };
     const client = new ConfluenceClient(
-      testConfig("https://confluence.lab.example"),
+      testConfig("https://confluence.example.com"),
       fetchFn,
     );
     const payload = await client.getJson("/rest/api/space");

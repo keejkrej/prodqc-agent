@@ -6,11 +6,11 @@ import { ConfigError } from "../src/errors.js";
 describe("loadConfig", () => {
   it("accepts a PAT and optional space allowlist", () => {
     const config = loadConfig({
-      CONFLUENCE_BASE_URL: "https://confluence.lab.example/",
+      CONFLUENCE_BASE_URL: "https://confluence.example.com/",
       CONFLUENCE_PAT: "token-1",
       CONFLUENCE_SPACES: "LAB, QC",
     });
-    assert.equal(config.baseUrl, "https://confluence.lab.example");
+    assert.equal(config.baseUrl, "https://confluence.example.com");
     assert.deepEqual(config.auth, { kind: "pat", token: "token-1" });
     assert.deepEqual(config.allowedSpaces, ["LAB", "QC"]);
   });

@@ -59,19 +59,17 @@ describe("GET-only contract", () => {
       const dir = await mkdtemp(path.join(tmpdir(), "confluence-get-only-"));
 
       await handlers.check_instance();
-      await handlers.list_spaces({ start: 0, limit: 10 });
-      await handlers.search({ cql: "type=page AND space=LAB", start: 0, limit: 2 });
-      await handlers.get_page({ id: "1002", body: "both" });
-      await handlers.get_children({ id: "1001", start: 0, limit: 10 });
-      await handlers.get_page_tree({ id: "1001", maxDepth: 2 });
       await handlers.get_page_links({ id: "1002" });
-      await handlers.get_attachments({ id: "1002", downloadDir: dir });
       await handlers.get_history({ id: "1002" });
       await handlers.build_space_graph({
         spaceKey: "LAB",
         outputPath: path.join(dir, "graph.json"),
         includeLinks: true,
       });
+      await handlers.list_spaces({ start: 0, limit: 10 });
+      await handlers.search({ cql: "type=page AND space=LAB", start: 0, limit: 2 });
+      await handlers.get_page({ id: "1002", body: "both" });
+      await handlers.get_children({ id: "1001", start: 0, limit: 10 });
 
       const basic = new ConfluenceClient(
         testConfig(mock.baseUrl, { kind: "basic", username: VALID_USER, password: VALID_PASSWORD }),

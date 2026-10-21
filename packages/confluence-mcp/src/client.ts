@@ -39,11 +39,6 @@ export class ConfluenceClient {
     }
   }
 
-  async getBytes(path: string, query?: Record<string, QueryValue>): Promise<Uint8Array> {
-    const response = await this.getResponse(path, query);
-    return new Uint8Array(await response.arrayBuffer());
-  }
-
   private async getResponse(path: string, query?: Record<string, QueryValue>): Promise<Response> {
     const url = this.resolveUrl(path, query);
     let lastError: Error | undefined;

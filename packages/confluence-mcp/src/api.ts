@@ -12,7 +12,6 @@ import type {
   OutgoingEdge,
   PageDetail,
   PageSummary,
-  PageTreeNode,
   PageVersion,
   SpaceGraph,
   SpaceSummary,
@@ -20,11 +19,21 @@ import type {
 
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
-const MAX_TREE_DEPTH = 8;
 const MAX_GRAPH_PAGES = 500;
 
 export function createHandlers(client: ConfluenceClient) {
   return {
+    check_instance: () => checkInstance(client),
+    get_page_links: (args: { id: string; resolve?: boolean | undefined }) =>
+      getPageLinks(client, args),
+    get_history: (args: { id: string; start?: number | undefined; limit?: number | undefined }) =>
+      getHistory(client, args),
+    build_space_graph: (args: {
+      spaceKey: string;
+      outputPath: string;
+      maxPages?: number | undefined;
+      includeLinks?: boolean | undefined;
+    }) => buildSpaceGraph(client, args),
     list_spaces: (args: { start?: number | undefined; limit?: number | undefined }) =>
       listSpaces(client, args),
     search: (args: {
@@ -39,24 +48,6 @@ export function createHandlers(client: ConfluenceClient) {
       start?: number | undefined;
       limit?: number | undefined;
     }) => getChildren(client, args),
-    get_page_tree: (args: { id: string; maxDepth?: number | undefined }) => getPageTree(client, args),
-    get_page_links: (args: { id: string; resolve?: boolean | undefined }) =>
-      getPageLinks(client, args),
-    get_attachments: (args: {
-      id: string;
-      start?: number | undefined;
-      limit?: number | undefined;
-      downloadDir?: string | undefined;
-    }) => getAttachments(client, args),
-    get_history: (args: { id: string; start?: number | undefined; limit?: number | undefined }) =>
-      getHistory(client, args),
-    build_space_graph: (args: {
-      spaceKey: string;
-      outputPath: string;
-      maxPages?: number | undefined;
-      includeLinks?: boolean | undefined;
-    }) => buildSpaceGraph(client, args),
-    check_instance: () => checkInstance(client),
   };
 }
 
@@ -173,35 +164,6 @@ export async function getChildren(
   return { ...page, results, size: results.length };
 }
 
-export async function getPageTree(
-  client: ConfluenceClient,
-  args: { id: string; maxDepth?: number | undefined },
-): Promise<PageTreeNode> {
-  const maxDepth = Math.min(Math.max(args.maxDepth ?? 3, 0), MAX_TREE_DEPTH);
-  const root = await getPage(client, { id: args.id, body: "none" });
-  return walkTree(client, root, 0, maxDepth);
-}
-
-async function walkTree(
-  client: ConfluenceClient,
-  page: Pick<PageDetail, "id" | "title" | "spaceKey">,
-  depth: number,
-  maxDepth: number,
-): Promise<PageTreeNode> {
-  if (depth >= maxDepth) {
-    return { id: page.id, title: page.title, spaceKey: page.spaceKey, children: [] };
-  }
-  const children: PageTreeNode[] = [];
-  const kids = await collectAll(
-    (start, limit) => getChildren(client, { id: page.id, start, limit }),
-    { pageSize: 25, maxItems: 200 },
-  );
-  for (const kid of kids) {
-    children.push(await walkTree(client, kid, depth + 1, maxDepth));
-  }
-  return { id: page.id, title: page.title, spaceKey: page.spaceKey, children };
-}
-
 export async function getPageLinks(
   client: ConfluenceClient,
   args: { id: string; resolve?: boolean | undefined },
@@ -212,7 +174,7 @@ export async function getPageLinks(
   const attachments = parsed.some((link) => link.kind === "attachment")
     ? (await collectAll(
         (start, limit) =>
-          getAttachments(client, { id: page.id, start, limit }),
+          listAttachments(client, { id: page.id, start, limit }),
         { pageSize: 25, maxItems: 100 },
       ))
     : [];
@@ -243,14 +205,9 @@ export async function getPageLinks(
   return { id: page.id, title: page.title, spaceKey: page.spaceKey, edges };
 }
 
-export async function getAttachments(
+async function listAttachments(
   client: ConfluenceClient,
-  args: {
-    id: string;
-    start?: number | undefined;
-    limit?: number | undefined;
-    downloadDir?: string | undefined;
-  },
+  args: { id: string; start?: number | undefined; limit?: number | undefined },
 ): Promise<Paginated<AttachmentSummary>> {
   await assertPageInAllowlist(client, args.id);
   const start = args.start ?? 0;
@@ -263,19 +220,7 @@ export async function getAttachments(
     start,
     limit,
   );
-  const results: AttachmentSummary[] = [];
-  for (const raw of page.results) {
-    let item = toAttachmentSummary(raw);
-    if (args.downloadDir && item.downloadPath) {
-      const bytes = await client.getBytes(item.downloadPath);
-      const destDir = path.resolve(args.downloadDir);
-      await mkdir(destDir, { recursive: true });
-      const dest = path.join(destDir, safeFilename(item.title));
-      await writeFile(dest, bytes);
-      item = { ...item, downloadedTo: dest };
-    }
-    results.push(item);
-  }
+  const results = page.results.map(toAttachmentSummary);
   return { ...page, results, size: results.length };
 }
 
@@ -444,11 +389,6 @@ function clampLimit(limit: number | undefined): number {
 
 function escapeCql(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function safeFilename(name: string): string {
-  const base = path.basename(name).replace(/[^A-Za-z0-9._-]+/g, "_");
-  return base.length > 0 ? base : "attachment.bin";
 }
 
 function toSpaceSummary(raw: unknown): SpaceSummary {

@@ -1,7 +1,7 @@
 {
   "name": "@prodqc/confluence-mcp",
   "version": "0.1.0",
-  "description": "Read-only MCP server for self-hosted Confluence Server REST API (GET only)",
+  "description": "GET-only MCP extras for Confluence Server: page-link graph, version list, instance check, and a small fallback when mcp-atlassian cannot run",
   "type": "module",
   "bin": {
     "confluence-mcp": "./dist/main.js"

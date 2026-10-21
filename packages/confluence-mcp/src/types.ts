@@ -38,13 +38,6 @@ export interface PageDetail {
   readonly webui: string | null;
 }
 
-export interface PageTreeNode {
-  readonly id: string;
-  readonly title: string;
-  readonly spaceKey: string;
-  readonly children: readonly PageTreeNode[];
-}
-
 export type OutgoingEdge =
   | {
       readonly kind: "page";
@@ -66,7 +59,6 @@ export interface AttachmentSummary {
   readonly mediaType: string | null;
   readonly fileSize: number | null;
   readonly downloadPath: string | null;
-  readonly downloadedTo?: string;
 }
 
 export interface SpaceGraph {

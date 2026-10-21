@@ -17,10 +17,62 @@ export function createServer(client: ConfluenceClient): McpServer {
   });
 
   server.registerTool(
+    "check_instance",
+    {
+      description:
+        "GET /rest/api/space and report whether this Confluence Server REST API is reachable. Use this before relying on mcp-atlassian or this fallback.",
+      inputSchema: {},
+    },
+    jsonTool(async () => handlers.check_instance()),
+  );
+
+  server.registerTool(
+    "get_page_links",
+    {
+      description:
+        "Parse ac:link / ri:page / ri:attachment from body.storage and resolve outgoing edges. Not provided by mcp-atlassian.",
+      inputSchema: {
+        id: z.string().min(1),
+        resolve: z.boolean().optional(),
+      },
+    },
+    jsonTool(handlers.get_page_links),
+  );
+
+  server.registerTool(
+    "get_history",
+    {
+      description:
+        "GET the version list for a page (number, author, date). mcp-atlassian's confluence_get_page_history fetches one version body, not this changelog.",
+      inputSchema: {
+        id: z.string().min(1),
+        start: optionalStart,
+        limit: optionalLimit,
+      },
+    },
+    jsonTool(handlers.get_history),
+  );
+
+  server.registerTool(
+    "build_space_graph",
+    {
+      description:
+        "Walk a space's pages (GET only), emit parent and storage-link edges, and write JSON to a local file. Not provided by mcp-atlassian.",
+      inputSchema: {
+        spaceKey: z.string().min(1),
+        outputPath: z.string().min(1),
+        maxPages: z.number().int().min(1).max(500).optional(),
+        includeLinks: z.boolean().optional(),
+      },
+    },
+    jsonTool(handlers.build_space_graph),
+  );
+
+  server.registerTool(
     "list_spaces",
     {
       description:
-        "List Confluence spaces visible to this account (GET /rest/api/space). Honors CONFLUENCE_SPACES.",
+        "Fallback: list spaces via GET /rest/api/space for instances too old for mcp-atlassian. Prefer mcp-atlassian when it works.",
       inputSchema: {
         start: optionalStart,
         limit: optionalLimit,
@@ -33,7 +85,7 @@ export function createServer(client: ConfluenceClient): McpServer {
     "search",
     {
       description:
-        "Search with Confluence Query Language via GET /rest/api/content/search. Paginated with start/limit. Never uses POST.",
+        "Fallback: CQL via GET /rest/api/content/search (never POST). Prefer mcp-atlassian's confluence_search on Server/DC 6.0+.",
       inputSchema: {
         cql: z.string().min(1),
         start: optionalStart,
@@ -48,7 +100,7 @@ export function createServer(client: ConfluenceClient): McpServer {
     "get_page",
     {
       description:
-        "GET a page by id, including storage and/or view body, labels, version, and ancestors.",
+        "Fallback: GET a page by id (storage and/or view body, labels, version, ancestors). Prefer mcp-atlassian's confluence_get_page when it works.",
       inputSchema: {
         id: z.string().min(1),
         body: z.enum(["storage", "view", "both", "none"]).optional(),
@@ -60,7 +112,8 @@ export function createServer(client: ConfluenceClient): McpServer {
   server.registerTool(
     "get_children",
     {
-      description: "GET direct child pages of a page (paginated).",
+      description:
+        "Fallback: GET direct child pages (paginated). Prefer mcp-atlassian's confluence_get_page_children when it works.",
       inputSchema: {
         id: z.string().min(1),
         start: optionalStart,
@@ -68,85 +121,6 @@ export function createServer(client: ConfluenceClient): McpServer {
       },
     },
     jsonTool(handlers.get_children),
-  );
-
-  server.registerTool(
-    "get_page_tree",
-    {
-      description:
-        "Recursively GET the child-page tree under a page. maxDepth is descendant depth (default 3, max 8).",
-      inputSchema: {
-        id: z.string().min(1),
-        maxDepth: z.number().int().min(0).max(8).optional(),
-      },
-    },
-    jsonTool(handlers.get_page_tree),
-  );
-
-  server.registerTool(
-    "get_page_links",
-    {
-      description:
-        "Parse ac:link / ri:page / ri:attachment from body.storage and resolve outgoing edges.",
-      inputSchema: {
-        id: z.string().min(1),
-        resolve: z.boolean().optional(),
-      },
-    },
-    jsonTool(handlers.get_page_links),
-  );
-
-  server.registerTool(
-    "get_attachments",
-    {
-      description:
-        "GET attachment metadata for a page. Optionally download bytes to a local folder (still GET).",
-      inputSchema: {
-        id: z.string().min(1),
-        start: optionalStart,
-        limit: optionalLimit,
-        downloadDir: z.string().min(1).optional(),
-      },
-    },
-    jsonTool(handlers.get_attachments),
-  );
-
-  server.registerTool(
-    "get_history",
-    {
-      description: "GET page versions with author and date (paginated).",
-      inputSchema: {
-        id: z.string().min(1),
-        start: optionalStart,
-        limit: optionalLimit,
-      },
-    },
-    jsonTool(handlers.get_history),
-  );
-
-  server.registerTool(
-    "build_space_graph",
-    {
-      description:
-        "Walk a space's pages (GET only), emit parent and storage-link edges, and write JSON to a local file.",
-      inputSchema: {
-        spaceKey: z.string().min(1),
-        outputPath: z.string().min(1),
-        maxPages: z.number().int().min(1).max(500).optional(),
-        includeLinks: z.boolean().optional(),
-      },
-    },
-    jsonTool(handlers.build_space_graph),
-  );
-
-  server.registerTool(
-    "check_instance",
-    {
-      description:
-        "GET /rest/api/space and report whether this Confluence Server REST API is reachable.",
-      inputSchema: {},
-    },
-    jsonTool(async () => handlers.check_instance()),
   );
 
   return server;
