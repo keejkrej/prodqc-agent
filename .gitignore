@@ -1,4 +1,9 @@
+node_modules
 node_modules/
 dist/
+dist-test/
 *.log
 .DS_Store
+output/
+packages/confluence-mcp/.env
+
