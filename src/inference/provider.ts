@@ -3,6 +3,8 @@ import { Context, Effect, Layer } from "effect"
 /**
  * Optional, pluggable model/inference provider.
  * The LNP QC disposition policy is rule-based and does not require this service.
+ * The lab-pilot protocol drafting CLI does: it calls `infer` with the model key
+ * from PROTOCOL_DRAFT_MODEL, then source-grounds every returned field.
  */
 export interface InferenceProviderShape {
   readonly providerId: string

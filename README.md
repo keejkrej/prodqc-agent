@@ -33,3 +33,26 @@ Simulated pitch numbers (also in the protocol `simulation` block): DLS t0 Z-aver
 npm test
 npm run typecheck
 ```
+
+## Lab-pilot protocol drafting CLI
+
+This is **not** the full migration pipeline. It drafts 2–5 local versions of one protocol into the existing `protocols/*.draft.json` schema (`draft: true`, Effect Schema) so a colleague can review differences.
+
+```bash
+# SYNTHETIC fixtures only (committed). Writes gitignored output/.
+npm run draft:protocol:fixtures
+
+# Real lab protocols: copy 2–5 versions (txt/md/pdf) into input/ — never commit them.
+mkdir -p input output
+PROTOCOL_DRAFT_MODEL="<model-key>" npm run draft:protocol -- --input input --output output
+```
+
+`PROTOCOL_DRAFT_MODEL` is required and is passed to `InferenceProvider`. Optional `PROTOCOL_DRAFT_INFER_URL` swaps in an HTTP infer Layer; otherwise the CLI uses a source-grounded extractor Layer. After infer, every field is checked against the source line: unread values are dropped, not filled in.
+
+The drafter:
+
+- Keeps observation-gated steps such as **until clear**, and `if cloudy → remake` branches, instead of forcing one linear path.
+- Stores units as UCUM (`mL/min`, `nm`, `%`, `Cel`, `h`, `1`, `{N/P}`).
+- Writes one sourced `*.draft.json` per version plus `comparison.md`: step-by-step diffs, open questions (missing units, conflicting values, vague endpoints), and a one-page comparison for the formulating scientist, QC, and a reviewing colleague.
+- Treats `input/` and `output/` as private. Only SYNTHETIC fixtures under `fixtures/protocol-draft/` are committed.
+
