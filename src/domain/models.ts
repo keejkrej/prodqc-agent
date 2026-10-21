@@ -52,6 +52,23 @@ export type ProductLine = typeof ProductLine.Type
 export const ServiceLevel = Schema.Literal("standard", "expedited")
 export type ServiceLevel = typeof ServiceLevel.Type
 
+/**
+ * Intended downstream use stated on an LNP work order.
+ * Disposition thresholds are the same; the action mapping differs by study type.
+ */
+export const DownstreamStudyType = Schema.Literal("screening", "in_vivo")
+export type DownstreamStudyType = typeof DownstreamStudyType.Type
+
+/**
+ * QC disposition for a formulated LNP batch relative to the work order's downstream use.
+ */
+export const LnpQcDispositionAction = Schema.Literal(
+  "release_for_cell_experiment",
+  "use_with_note",
+  "remake"
+)
+export type LnpQcDispositionAction = typeof LnpQcDispositionAction.Type
+
 export const RequestedFormat = Schema.Literal(
   "frozen_aliquot",
   "lyophilized",
@@ -402,6 +419,7 @@ export const QCAssay = Schema.Literal(
   "endotoxin",
   "dls_size",
   "dls_pdi",
+  "dls_size_drift",
   "ribogreen_ee",
   "zeta"
 )
@@ -415,6 +433,7 @@ export const QCMetric = Schema.Literal(
   "z_avg_nm",
   "pdi",
   "ee_pct",
+  "size_drift_nm",
   "zeta_mv",
   "concentration_mg_ml"
 )

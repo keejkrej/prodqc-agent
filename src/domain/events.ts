@@ -25,6 +25,8 @@ import {
   BiosafetyScreenVerdict,
   CauseAttribution,
   DeviationCategory,
+  DownstreamStudyType,
+  LnpQcDispositionAction,
   ParameterValue,
   QCVerdict,
   RequestState
@@ -132,6 +134,49 @@ export const EventPayloadUnion = Schema.Union(
     _tag: Schema.Literal("qc.measured"),
     measurement_id: QCMeasurementId,
     verdict: QCVerdict
+  }),
+  Schema.Struct({
+    _tag: Schema.Literal("qc.decided"),
+    action: LnpQcDispositionAction,
+    rule_id: Schema.String,
+    rule_applied: Schema.String,
+    downstream_study_type: DownstreamStudyType,
+    classification: Schema.Literal("in_spec", "borderline", "hard_fail"),
+    borderline_batch: Schema.Boolean,
+    specs_evaluated: Schema.Number.pipe(Schema.int(), Schema.positive()),
+    specs_missed: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
+    all_misses_within_borderline_band: Schema.Boolean,
+    spec_miss_summary: Schema.String,
+    pdi: Schema.Number,
+    pdi_max: Schema.Number,
+    pdi_borderline_max: Schema.Number,
+    ee_pct: Schema.Number,
+    ee_pct_min: Schema.Number,
+    ee_pct_borderline_min: Schema.Number,
+    size_drift_nm: Schema.Number,
+    size_drift_nm_max: Schema.Number,
+    size_drift_nm_borderline_max: Schema.Number,
+    operator_id: Schema.String,
+    agent_id: Schema.String,
+    simulated: Schema.Literal(true)
+  }),
+  Schema.Struct({
+    _tag: Schema.Literal("qc.signed_off"),
+    outcome: Schema.Literal("accepted"),
+    recommended_action: LnpQcDispositionAction,
+    final_action: LnpQcDispositionAction,
+    signer_name: Schema.String.pipe(Schema.minLength(1)),
+    reason: Schema.Null,
+    simulated: Schema.Literal(true)
+  }),
+  Schema.Struct({
+    _tag: Schema.Literal("qc.signed_off"),
+    outcome: Schema.Literal("overridden"),
+    recommended_action: LnpQcDispositionAction,
+    final_action: LnpQcDispositionAction,
+    signer_name: Schema.String.pipe(Schema.minLength(1)),
+    reason: Schema.String.pipe(Schema.minLength(1)),
+    simulated: Schema.Literal(true)
   }),
   Schema.Struct({
     _tag: Schema.Literal("deviation.opened"),
