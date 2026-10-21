@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 import { Effect } from "effect"
 import {
+  DEFAULT_SIMULATED_SIGNER_NAME,
   EventLogService,
   loadLnpDraftProtocol,
   runDemoBatches,
@@ -20,6 +21,12 @@ describe("SIMULATED LNP batch end-to-end", () => {
     assert.equal(inVivo.context.workOrder.downstreamStudyType, "in_vivo")
     assert.equal(screening.decision.action, "use_with_note")
     assert.equal(inVivo.decision.action, "remake")
+    assert.equal(screening.signOff.outcome, "accepted")
+    assert.equal(inVivo.signOff.outcome, "accepted")
+    assert.equal(screening.signOff.finalAction, "use_with_note")
+    assert.equal(inVivo.signOff.finalAction, "remake")
+    assert.equal(screening.signOff.signerName, DEFAULT_SIMULATED_SIGNER_NAME)
+    assert.equal(inVivo.signOff.signerName, DEFAULT_SIMULATED_SIGNER_NAME)
 
     const pdi = screening.measurements.find((row) => row.metric === "pdi")
     const ee = screening.measurements.find((row) => row.metric === "ee_pct")
@@ -80,6 +87,21 @@ describe("SIMULATED LNP batch end-to-end", () => {
       if (driftMeasured?.payload._tag === "qc.measured") {
         assert.equal(driftMeasured.payload.verdict, "fail")
       }
+      const decidedIndex = result.auditLog.findIndex((entry) => entry.payload._tag === "qc.decided")
+      const signed = result.auditLog[decidedIndex + 1]
+      assert.ok(signed)
+      assert.equal(signed.payload._tag, "qc.signed_off")
+      assert.equal(signed.actor_type, "human")
+      assert.equal(signed.actor_id, DEFAULT_SIMULATED_SIGNER_NAME)
+      assert.equal(signed.prev_hash, result.auditLog[decidedIndex]?.hash)
+      if (signed.payload._tag === "qc.signed_off") {
+        assert.equal(signed.payload.outcome, "accepted")
+        assert.equal(signed.payload.recommended_action, result.decision.action)
+        assert.equal(signed.payload.final_action, result.decision.action)
+        assert.equal(signed.payload.reason, null)
+        assert.equal(signed.payload.signer_name, DEFAULT_SIMULATED_SIGNER_NAME)
+        assert.equal(signed.payload.simulated, true)
+      }
     }
   })
 
@@ -101,6 +123,9 @@ describe("SIMULATED LNP batch end-to-end", () => {
     assert.ok(codes.includes("step.completed"))
     assert.ok(codes.includes("qc.measured"))
     assert.ok(codes.includes("qc.decided"))
+    assert.ok(codes.includes("qc.signed_off"))
     assert.ok(codes.includes("run.completed"))
+    const decidedIndex = codes.indexOf("qc.decided")
+    assert.equal(codes[decidedIndex + 1], "qc.signed_off")
   })
 })

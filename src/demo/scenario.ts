@@ -32,7 +32,8 @@ export const SIMULATED_TIMELINE = {
   dlsT0: "2026-11-03T10:00:00Z",
   ribogreen: "2026-11-03T11:30:00Z",
   dlsT24h: "2026-11-04T10:00:00Z",
-  decidedAt: "2026-11-04T10:15:00Z"
+  decidedAt: "2026-11-04T10:15:00Z",
+  signedAt: "2026-11-04T10:20:00Z"
 } as const as Record<
   | "submittedAt"
   | "mixStart"
@@ -40,7 +41,8 @@ export const SIMULATED_TIMELINE = {
   | "dlsT0"
   | "ribogreen"
   | "dlsT24h"
-  | "decidedAt",
+  | "decidedAt"
+  | "signedAt",
   Rfc3339UtcTimestamp
 >
 

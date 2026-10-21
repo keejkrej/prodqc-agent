@@ -149,6 +149,7 @@ export const createInMemoryEventLog = (): EventLogServiceShape => {
             entry.payload._tag.startsWith("request.") ||
             entry.payload._tag.startsWith("run.") ||
             entry.payload._tag === "qc.decided" ||
+            entry.payload._tag === "qc.signed_off" ||
             entry.payload._tag.startsWith("delivery.")
           )
         })

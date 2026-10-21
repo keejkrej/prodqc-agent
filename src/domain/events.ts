@@ -161,6 +161,24 @@ export const EventPayloadUnion = Schema.Union(
     simulated: Schema.Literal(true)
   }),
   Schema.Struct({
+    _tag: Schema.Literal("qc.signed_off"),
+    outcome: Schema.Literal("accepted"),
+    recommended_action: LnpQcDispositionAction,
+    final_action: LnpQcDispositionAction,
+    signer_name: Schema.String.pipe(Schema.minLength(1)),
+    reason: Schema.Null,
+    simulated: Schema.Literal(true)
+  }),
+  Schema.Struct({
+    _tag: Schema.Literal("qc.signed_off"),
+    outcome: Schema.Literal("overridden"),
+    recommended_action: LnpQcDispositionAction,
+    final_action: LnpQcDispositionAction,
+    signer_name: Schema.String.pipe(Schema.minLength(1)),
+    reason: Schema.String.pipe(Schema.minLength(1)),
+    simulated: Schema.Literal(true)
+  }),
+  Schema.Struct({
     _tag: Schema.Literal("deviation.opened"),
     deviation_id: DeviationId,
     category: DeviationCategory,

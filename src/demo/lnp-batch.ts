@@ -24,6 +24,12 @@ import {
   LnpQcPolicyService,
   type LnpQcDecision
 } from "../policy/lnp-qc.ts"
+import {
+  DEFAULT_SIMULATED_SIGNER_NAME,
+  makeHumanSignOff,
+  type LnpHumanSignOffIntent,
+  type LnpHumanSignOffRecord
+} from "../policy/lnp-sign-off.ts"
 import type { LnpDraftProtocol } from "../protocol/lnp-draft.ts"
 import { stripProseForAgent } from "../security/capabilities.ts"
 import { validateParameterBindingsAgainstProtocol } from "../services/self-improvement.ts"
@@ -38,8 +44,14 @@ export interface LnpBatchRunResult {
   readonly instrumentEvents: ReadonlyArray<InstrumentEvent>
   readonly measurements: ReadonlyArray<QCMeasurement>
   readonly decision: LnpQcDecision
+  readonly signOff: LnpHumanSignOffRecord
   readonly auditLog: ReadonlyArray<EventLogEntry>
   readonly chainHead: string
+}
+
+export interface RunSimulatedLnpBatchOptions {
+  readonly signerName?: string
+  readonly signOff?: LnpHumanSignOffIntent
 }
 
 const appendAgentEvent = (
@@ -52,9 +64,21 @@ const appendAgentEvent = (
     actor_id: LNP_FORMULATION_AGENT_ID
   })
 
+const appendHumanSignOff = (
+  log: EventLogServiceShape,
+  input: Omit<AppendEventInput, "actor_type" | "actor_id">,
+  signerName: string
+) =>
+  log.append({
+    ...input,
+    actor_type: "human",
+    actor_id: signerName
+  })
+
 export const runOneSimulatedLnpBatch = (
   protocol: LnpDraftProtocol,
-  downstreamStudyType: DownstreamStudyType
+  downstreamStudyType: DownstreamStudyType,
+  options: RunSimulatedLnpBatchOptions = {}
 ): Effect.Effect<
   LnpBatchRunResult,
   unknown,
@@ -232,6 +256,13 @@ export const runOneSimulatedLnpBatch = (
       decidedAt: ts(SIMULATED_TIMELINE.decidedAt),
       operatorId: context.ids.operatorId
     })
+    const signerName = options.signerName ?? DEFAULT_SIMULATED_SIGNER_NAME
+    const signOff = makeHumanSignOff({
+      recommendedAction: decision.action,
+      intent: options.signOff ?? { outcome: "accepted" },
+      signerName,
+      signedAt: ts(SIMULATED_TIMELINE.signedAt)
+    })
 
     yield* appendAgentEvent(log, {
       request_id: context.request.id,
@@ -267,10 +298,42 @@ export const runOneSimulatedLnpBatch = (
       occurred_at: decision.decidedAt
     })
 
+    yield* appendHumanSignOff(
+      log,
+      {
+        request_id: context.request.id,
+        entity_type: "qc",
+        entity_id: context.run.id,
+        visibility: "lab_only",
+        payload:
+          signOff.outcome === "accepted"
+            ? {
+                _tag: "qc.signed_off",
+                outcome: "accepted",
+                recommended_action: signOff.recommendedAction,
+                final_action: signOff.finalAction,
+                signer_name: signOff.signerName,
+                reason: null,
+                simulated: true
+              }
+            : {
+                _tag: "qc.signed_off",
+                outcome: "overridden",
+                recommended_action: signOff.recommendedAction,
+                final_action: signOff.finalAction,
+                signer_name: signOff.signerName,
+                reason: signOff.reason,
+                simulated: true
+              },
+        occurred_at: signOff.signedAt
+      },
+      signOff.signerName
+    )
+
     const runOutcome =
-      decision.action === "remake"
+      signOff.finalAction === "remake"
         ? "failed"
-        : decision.action === "use_with_note"
+        : signOff.finalAction === "use_with_note"
           ? "partial"
           : "success"
 
@@ -285,7 +348,7 @@ export const runOneSimulatedLnpBatch = (
         yield_mg: 0.25,
         purity_pct: null
       },
-      occurred_at: ts(SIMULATED_TIMELINE.decidedAt)
+      occurred_at: signOff.signedAt
     })
 
     const timeline = yield* log.getRequestTimeline({
@@ -306,6 +369,7 @@ export const runOneSimulatedLnpBatch = (
       ],
       measurements,
       decision,
+      signOff,
       auditLog: timeline.events,
       chainHead: timeline.chain_head
     }
@@ -319,9 +383,34 @@ export const makeLnpDemoLayer = (protocol: LnpDraftProtocol) =>
     LnpQcPolicyLive
   )
 
-export const runDemoBatches = (protocol: LnpDraftProtocol) =>
+export const runDemoBatches = (
+  protocol: LnpDraftProtocol,
+  signerName: string = DEFAULT_SIMULATED_SIGNER_NAME
+) =>
   Effect.gen(function* () {
-    const screening = yield* runOneSimulatedLnpBatch(protocol, "screening")
-    const inVivo = yield* runOneSimulatedLnpBatch(protocol, "in_vivo")
+    const screening = yield* runOneSimulatedLnpBatch(protocol, "screening", {
+      signerName,
+      signOff: { outcome: "accepted" }
+    })
+    const inVivo = yield* runOneSimulatedLnpBatch(protocol, "in_vivo", {
+      signerName,
+      signOff: { outcome: "accepted" }
+    })
     return { screening, inVivo }
+  }).pipe(Effect.provide(makeLnpDemoLayer(protocol)))
+
+export const SIMULATED_OVERRIDE_REASON =
+  "SIMULATED: allow the already-plated non-GLP replicate; remake remaining vials after the session."
+
+export const runSimulatedOverrideExample = (
+  protocol: LnpDraftProtocol,
+  signerName: string = DEFAULT_SIMULATED_SIGNER_NAME
+) =>
+  runOneSimulatedLnpBatch(protocol, "in_vivo", {
+    signerName,
+    signOff: {
+      outcome: "overridden",
+      finalAction: "use_with_note",
+      reason: SIMULATED_OVERRIDE_REASON
+    }
   }).pipe(Effect.provide(makeLnpDemoLayer(protocol)))
