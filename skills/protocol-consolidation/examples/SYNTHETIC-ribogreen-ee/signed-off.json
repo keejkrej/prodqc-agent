@@ -1,0 +1,14 @@
+{
+  "disclaimer": "SYNTHETIC local sign-off envelope. Not a real owner record.",
+  "protocol_page_id": "102",
+  "protocol_version": 3,
+  "variant": {
+    "assay_type": "ribogreen-ee",
+    "dye_dilution": "1:200",
+    "triton_standard_curve": true,
+    "well_volume_uL": 100,
+    "notes": "SYNTHETIC local note — strip before any share"
+  },
+  "outcome": "accepted",
+  "signed_at": "2026-01-15T16:00:00.000Z"
+}

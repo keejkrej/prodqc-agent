@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/variant-ribogreen-ee.json",
+  "title": "RibogreenEeVariant",
+  "description": "Local structured variant. Free text only in notes. Used on every QC result and signed-off record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assay_type",
+    "dye_dilution",
+    "triton_standard_curve",
+    "well_volume_uL",
+    "notes"
+  ],
+  "properties": {
+    "assay_type": {
+      "const": "ribogreen-ee"
+    },
+    "dye_dilution": {
+      "type": "string",
+      "pattern": "^[0-9]+:[0-9]+$",
+      "description": "Working dye dilution as ratio, e.g. 1:100 or 1:200."
+    },
+    "triton_standard_curve": {
+      "type": "boolean",
+      "description": "True if a lysed (Triton) standard curve is described or used."
+    },
+    "well_volume_uL": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Assay well volume in microlitres."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Only free-text field. Local only; strip before sharing."
+    }
+  }
+}

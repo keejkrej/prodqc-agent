@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/outcome-summary.json",
+  "title": "OutcomeSummary",
+  "description": "Anonymised counts for one structured variant. No notes, page ids, protocol text, or raw measurements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assay", "variant", "n_qc_results", "n_signed_off"],
+  "properties": {
+    "assay": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variant": {
+      "description": "Structured variant key only (fixed fields, no notes).",
+      "$ref": "variant-key-ribogreen-ee.schema.json"
+    },
+    "n_qc_results": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_signed_off": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_spec_miss": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of QC results that missed the local spec. No values."
+    },
+    "n_accepted_signoff": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "n_overridden_signoff": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

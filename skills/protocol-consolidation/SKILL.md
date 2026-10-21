@@ -15,7 +15,7 @@ description: >-
 
 Turn 2–5 local versions of **one assay family** into one sourced draft plus owner decisions. **Self-improvement is the point:** every resolved decision should become a candidate check in `checks/<assay-type>.md` so the next lab’s run catches that error class automatically.
 
-Do not invent unread values. Do not write, move, or delete wiki pages. Do not commit real protocol text (use gitignored `runs/` and `input/` / `output/`). Share across labs **only** generic checks and anonymised counts.
+Do not invent unread values. Do not write, move, or delete wiki pages. Do not commit real protocol text (use gitignored `runs/` and `input/` / `output/`). Share across labs **only** generic checks (`assay`, `rule`, `reason`), owner accept/reject verdicts (these weight the rules), anonymised outcome summaries **per structured variant**, and proposed check changes. Protocols and raw data never leave the lab. Headline metric: rate at which **new-lab** owners accept the checks. See [docs/cross-lab-loop.md](../../docs/cross-lab-loop.md).
 
 ## When to use
 
@@ -38,7 +38,7 @@ If a tool would POST/PUT/DELETE to Confluence, stop.
 3. **Compare side by side + checklist.** Load `checks/<assay-type>.md`. Flag scientific error classes; do not “fix” numbers. [references/compare-and-checks.md](references/compare-and-checks.md).
 4. **Draft one merged protocol.** Copy the shortlist into local `input/`. Run the drafting CLI. Every kept field needs a source pointer. Unread values become open questions. [references/draft-and-review.md](references/draft-and-review.md).
 5. **List open decisions for the assay owner.** Conflicts, missing curves, formula disagreements, unmatched dilutions/volumes. No silent defaults.
-6. **Human review.** Named owner resolves each decision (`accepted` / `corrected` / `deferred`). Colleague reviews the comparison. Then write a **proposed check diff** for approval — do not edit `checks/` until a human accepts the diff. [references/self-improvement.md](references/self-improvement.md).
+6. **Human review.** Named owner resolves each decision (`accepted` / `corrected` / `deferred`) and records accept/reject **verdicts** on shared checks. Colleague reviews the comparison. Then write a **proposed check diff** for approval — the receiving lab adopts it only when **its** owner signs off. [references/self-improvement.md](references/self-improvement.md).
 
 Worked **synthetic** example (RiboGreen encapsulation efficiency): [examples/SYNTHETIC-ribogreen-ee/](examples/SYNTHETIC-ribogreen-ee/). Not a real lab SOP.
 
@@ -53,10 +53,12 @@ runs/<run-id>/          # gitignored; never commit
   output/               # *.draft.json, comparison.md, pitch-summary.json
   open-decisions.md
   proposed-checks/*.diff
+  qc-results.json          # each row: protocol_page_id, protocol_version, variant
+  signed-off.json          # same provenance fields
   anonymised-counts.json
 ```
 
-Pitch slides use `--summary-only` counts only. Cross-lab sharing rules: [references/cross-lab.md](references/cross-lab.md).
+Pitch slides use `--summary-only` counts only. Cross-lab loop and JSON schemas: [docs/cross-lab-loop.md](../../docs/cross-lab-loop.md). Short reminder: [references/cross-lab.md](references/cross-lab.md). Provenance fields: [references/provenance-and-variant.md](references/provenance-and-variant.md).
 
 ## Hard rules
 
@@ -64,5 +66,6 @@ Pitch slides use `--summary-only` counts only. Cross-lab sharing rules: [referen
 - Institution-approved or local model only; otherwise skip infer and keep values unfilled.
 - Keep “until clear” / observation-gated branches; do not flatten them.
 - Units as UCUM when present in source.
-- Check library changes are diffs + human approval, never silent edits.
+- Every QC result and signed-off record must include `protocol_page_id`, `protocol_version`, and a structured `variant` (RiboGreen: `dye_dilution`, `triton_standard_curve`, `well_volume_uL`). Free text only in `variant.notes`.
+- Check library changes are diffs + human approval, never silent edits. A new lab adopts a proposal only when its owner signs off.
 - Generic issue classes belong in `checks/`. Lab-specific numbers and page titles do not.

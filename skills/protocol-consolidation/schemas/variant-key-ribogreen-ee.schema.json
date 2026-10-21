@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/variant-key-ribogreen-ee.json",
+  "title": "RibogreenEeVariantKey",
+  "description": "Shareable variant key: same fixed fields as the local variant, without notes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assay_type", "dye_dilution", "triton_standard_curve", "well_volume_uL"],
+  "properties": {
+    "assay_type": { "const": "ribogreen-ee" },
+    "dye_dilution": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
+    "triton_standard_curve": { "type": "boolean" },
+    "well_volume_uL": { "type": "number", "exclusiveMinimum": 0 }
+  }
+}

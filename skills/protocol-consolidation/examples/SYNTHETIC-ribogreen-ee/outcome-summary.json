@@ -1,0 +1,14 @@
+{
+  "assay": "ribogreen-ee",
+  "variant": {
+    "assay_type": "ribogreen-ee",
+    "dye_dilution": "1:200",
+    "triton_standard_curve": true,
+    "well_volume_uL": 100
+  },
+  "n_qc_results": 8,
+  "n_signed_off": 8,
+  "n_spec_miss": 2,
+  "n_accepted_signoff": 7,
+  "n_overridden_signoff": 1
+}

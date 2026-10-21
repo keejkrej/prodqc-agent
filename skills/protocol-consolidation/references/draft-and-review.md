@@ -24,6 +24,8 @@ If `PROTOCOL_DRAFT_MODEL` is not an institution-approved or local model, **do no
 
 There is no merged `*.draft.json` until the owner resolves conflicts. The “merged protocol” in this skill is: CLI drafts + checklist hits + `open-decisions.md`. After review, a human (not the agent) chooses which sourced values survive.
 
+When this family later produces QC results or sign-offs, each record must carry `protocol_page_id`, `protocol_version`, and the assay’s structured `variant` ([provenance-and-variant.md](provenance-and-variant.md)). Do not stash method choices in a notes blob.
+
 ## 5. Open decisions for the assay owner
 
 Write `runs/<run-id>/open-decisions.md`. Each item:
@@ -38,9 +40,9 @@ Do not pick a default formula, dilution, or volume.
 
 ## 6. Human review
 
-1. **Owner** sets each decision to `accepted` | `corrected` | `deferred`, with their name and a timestamp.
+1. **Owner** sets each decision to `accepted` | `corrected` | `deferred`, with their name and a timestamp (local). For each shared check they also record a shareable `accept` / `reject` **verdict** (no name on the verdict object).
 2. **Colleague** reviews `comparison.md` (and `--review` JSON if they use it).
-3. Only then write `runs/<run-id>/proposed-checks/*.diff` from resolved decisions (see [self-improvement.md](self-improvement.md)).
-4. A human applies the diff to `checks/` in a separate change. The agent does not silently edit the shared library.
+3. Only then write `runs/<run-id>/proposed-checks/*.diff` (and a `ProposedChange` JSON) from resolved decisions (see [self-improvement.md](self-improvement.md)).
+4. A **receiving lab** applies that proposal only when **its** owner signs off. The agent does not silently edit `checks/`.
 
 Stop if the owner defers everything: keep the drafts private; do not propose checks from guesses.

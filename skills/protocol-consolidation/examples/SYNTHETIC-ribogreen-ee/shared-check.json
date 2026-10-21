@@ -1,0 +1,7 @@
+{
+  "id": "inverted-ee-formula",
+  "assay": "ribogreen-ee",
+  "rule": "Flag when EE is written as total/free, or free/total without 1 minus.",
+  "reason": "That expression inverts free and total and does not report a fraction encapsulated.",
+  "library_version": "0.1.0"
+}

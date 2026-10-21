@@ -1,17 +1,14 @@
-# Cross-lab sharing
+# Cross-lab sharing (short)
 
-Each lab keeps its wiki, NAS copies, `runs/`, `input/`, `output/`, and draft JSON **private**.
+Full loop, headline metric, and JSON schemas: [docs/cross-lab-loop.md](../../../docs/cross-lab-loop.md).
 
 Labs may share:
 
-- Generic files under `checks/` after human-approved diffs
-- `checks/CHANGELOG.md`
-- Anonymised counts (`assay_type`, check ids, hit/unknown/decision counts)
+- Shared checks: `{ assay, rule, reason }`
+- Owner `accept` / `reject` verdicts (these **weight** the rules)
+- Anonymised outcome summaries **per structured variant** (counts, no values, no `notes`)
+- Proposed changes — adopted only when the **receiving** lab’s owner signs off
 
-Labs must not share:
+Labs must not share protocols, drafts, `protocol_page_id`, raw QC values, or variant `notes`.
 
-- Page titles, bodies, authors, space keys
-- Protocol values, formulas as filled-in SOPs, attachments
-- Owner names in public slides (counts only)
-
-If two labs hit the same check id, that is evidence the library is doing its job. It is not a reason to merge their protocol text.
+Headline metric: **new-lab check accept rate** (`lab_novelty: "new"`).

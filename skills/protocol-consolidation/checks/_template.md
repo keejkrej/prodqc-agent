@@ -8,6 +8,8 @@ status: proposed
 
 Generic scientific error classes for this assay type. No lab names, page titles, or site-specific numbers.
 
+List the **fixed variant fields** for this assay (name, type). Free text only in `notes`. QC results and sign-offs must carry `protocol_page_id`, `protocol_version`, and that variant.
+
 ## How to apply
 
 For each shortlisted version: `hit` (source shows the error class), `clear` (source shows the required control), or `unknown` (source does not say). Unknown → open decision, not a pass.

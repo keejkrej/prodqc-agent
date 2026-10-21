@@ -53,6 +53,18 @@ Copy `versions/` to a private `input/` and run the drafting CLI. Every number in
 
 Suppose the owner accepts `1 − (free/total)` and asks that **undocumented dye-dilution changes** stay a library check (already `dye-dilution-mismatch`). They also ask to catch “formula written as total/free” more explicitly in CHANGELOG language.
 
-`proposed-check.diff` is a **sample approved-style diff** adding a one-line clarification to `inverted-ee-formula`. In a real run the agent only writes this file; a human applies it.
+`proposed-check.diff` is a **sample approved-style diff** adding a one-line clarification to `inverted-ee-formula`. In a real run the agent only writes this file; a receiving lab applies it only when **its** owner signs off.
 
-Anonymised counts for this synthetic run are in `anonymised-counts.json` (shareable shape, still fictional).
+## Provenance on QC / sign-off
+
+`qc-result.json` and `signed-off.json` show the required local envelope: `protocol_page_id`, `protocol_version`, and a RiboGreen `variant` (`dye_dilution`, `triton_standard_curve`, `well_volume_uL`, `notes`). Notes stay in the lab.
+
+Shareable objects for the cross-lab loop (no protocol text):
+
+- `shared-check.json` — `{ assay, rule, reason }`
+- `verdict.json` — new-lab `accept` (weights the rule; counts toward the headline metric)
+- `outcome-summary.json` — counts for the `1:200` / Triton-curve / 100 µL variant key (no `notes`, no values)
+
+See [docs/cross-lab-loop.md](../../../../docs/cross-lab-loop.md).
+
+Anonymised run roll-up: `anonymised-counts.json`.

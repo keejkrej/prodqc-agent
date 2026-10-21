@@ -8,4 +8,4 @@
 | `ribogreen-ee.md` | RiboGreen-style encapsulation efficiency |
 | `CHANGELOG.md` | Accepted additions only |
 
-New checks enter through `runs/<run-id>/proposed-checks/*.diff` and human approval. See [../references/self-improvement.md](../references/self-improvement.md).
+New checks enter through `runs/<run-id>/proposed-checks/*.diff` and human approval. A receiving lab adopts a proposal only when its owner signs off. See [../references/self-improvement.md](../references/self-improvement.md) and [docs/cross-lab-loop.md](../../../docs/cross-lab-loop.md).

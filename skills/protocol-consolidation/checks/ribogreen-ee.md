@@ -12,6 +12,8 @@ Applies to fluorescence-based nucleic-acid encapsulation efficiency (EE) assays 
 
 For each shortlisted version: `hit`, `clear`, or `unknown`. Quote an excerpt in the private run folder only.
 
+QC results and sign-offs for this assay must use the fixed variant `{ dye_dilution, triton_standard_curve, well_volume_uL, notes }`. Free text only in `notes`.
+
 ## Checks
 
 ### missing-dual-standard-curves

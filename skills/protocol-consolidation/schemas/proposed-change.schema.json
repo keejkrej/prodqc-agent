@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/proposed-change.json",
+  "title": "ProposedChange",
+  "description": "A proposed library edit. A receiving lab adopts it only when its own assay owner signs off.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "assay", "check_id", "rule", "reason", "status"],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["add_check", "edit_check", "retire_check"]
+    },
+    "assay": { "type": "string", "minLength": 1 },
+    "check_id": { "type": "string", "minLength": 1 },
+    "rule": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "from_library_version": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "adopted", "rejected"]
+    }
+  }
+}

@@ -37,7 +37,15 @@ Do **not** encode the owner’s chosen dilution or volume as a universal constan
 }
 ```
 
-No titles, excerpts, authors, spaces, or measured values. This object is what may leave the lab besides the generic `checks/` files.
+No titles, excerpts, authors, spaces, or measured values.
+
+Also emit, for sharing:
+
+- `SharedCheck` objects (`assay`, `rule`, `reason`) — see `schemas/check.schema.json`
+- `CheckVerdict` objects (`accept` / `reject`, `lab_novelty`) — these **weight** the rules
+- `OutcomeSummary` objects **per structured variant** (no `notes`, no page ids)
+
+Headline metric: new-lab check accept rate. Full loop: [docs/cross-lab-loop.md](../../../docs/cross-lab-loop.md).
 
 ## What not to automate yet
 
