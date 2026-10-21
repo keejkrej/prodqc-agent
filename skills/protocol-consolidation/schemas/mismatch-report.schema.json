@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/mismatch-report.json",
+  "title": "MismatchReport",
+  "description": "Diff of two variant field tables. No protocol text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assay", "left", "right", "mismatches", "matches"],
+  "properties": {
+    "assay": { "const": "ribogreen-ee" },
+    "left": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lab_id"],
+      "properties": {
+        "lab_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "right": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lab_id"],
+      "properties": {
+        "lab_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "mismatches": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fieldMismatch" }
+    },
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "dye_dilution",
+          "triton_standard_curve",
+          "curve_well_volume_uL",
+          "sample_well_volume_uL",
+          "incubation_time_min",
+          "incubation_temperature_C",
+          "ee_formula",
+          "excitation_nm",
+          "emission_nm"
+        ]
+      }
+    },
+    "submission_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "Present on methods-vs-wiki reports only."
+    },
+    "selected_protocol_version": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "page_id", "version", "valid_from", "valid_to"],
+      "properties": {
+        "id": { "type": "string" },
+        "page_id": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "valid_from": { "type": "string" },
+        "valid_to": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "fieldMismatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "kind", "left", "right"],
+      "properties": {
+        "field": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["value_diff", "missing_left", "missing_right"]
+        },
+        "left": { "$ref": "#/$defs/cellOrNull" },
+        "right": { "$ref": "#/$defs/cellOrNull" }
+      }
+    },
+    "cellOrNull": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["value", "source"],
+      "properties": {
+        "value": {
+          "type": ["string", "number", "boolean"]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["file", "line"],
+          "properties": {
+            "file": { "type": "string" },
+            "line": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    }
+  }
+}

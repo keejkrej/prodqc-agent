@@ -57,13 +57,16 @@ Suppose the owner accepts `1 − (free/total)` and asks that **undocumented dye-
 
 ## Provenance on QC / sign-off
 
-`qc-result.json` and `signed-off.json` show the required local envelope: `protocol_page_id`, `protocol_version`, and a RiboGreen `variant` (`dye_dilution`, `triton_standard_curve`, `well_volume_uL`, `notes`). Notes stay in the lab.
+`qc-result.json` and `signed-off.json` show the required local envelope: `protocol_page_id`, `protocol_version`, and a RiboGreen `variant` (`dye_dilution`, `triton_standard_curve`, well volumes, incubation, normalised `ee_formula`, wavelengths, `notes`). Notes stay in the lab.
 
 Shareable objects for the cross-lab loop (no protocol text):
 
 - `shared-check.json` — `{ assay, rule, reason }`
 - `verdict.json` — new-lab `accept` (weights the rule; counts toward the headline metric)
-- `outcome-summary.json` — counts for the `1:200` / Triton-curve / 100 µL variant key (no `notes`, no values)
+- `outcome-summary.json` — counts for the structured variant key (no `notes`, no values)
+- variant field tables — extract/compare two fictional labs under [../../variant-table/fixtures/](../../variant-table/fixtures/)
+
+Local graph (not shared): `lab-ontology.json`. `Dataset ran_under ProtocolVersion` is how a QC plate file points at wiki page `N101` v2. Methods vs wiki uses the same field tables; see [docs/lab-ontology.md](../../../../docs/lab-ontology.md).
 
 See [docs/cross-lab-loop.md](../../../../docs/cross-lab-loop.md).
 

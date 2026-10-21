@@ -8,7 +8,8 @@
   "scripts": {
     "deps:ext4": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && mkdir -p \"$PROJECT_CACHE_DIR\" && cp package.json \"$PROJECT_CACHE_DIR/package.json\" && npm --prefix \"$PROJECT_CACHE_DIR\" install --cache \"$PROJECT_CACHE_DIR/npm\" --no-audit --no-fund",
     "typecheck": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && node --preserve-symlinks \"$PROJECT_CACHE_DIR/node_modules/typescript/bin/tsc\" --noEmit",
-    "test": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && node --preserve-symlinks \"$PROJECT_CACHE_DIR/node_modules/typescript/bin/tsc\" --noEmit false --rewriteRelativeImportExtensions true --outDir \"$PROJECT_CACHE_DIR/dist\" && node --test \"$PROJECT_CACHE_DIR/dist/tests/abstractions.test.js\""
+    "variant-table": "node --experimental-strip-types --disable-warning=ExperimentalWarning skills/protocol-consolidation/variant-table/src/cli.ts",
+    "test": "PROJECT_CACHE_DIR=\"$HOME/.cache/projects/$(basename \"$PWD\")-$(pwd -P | sha1sum | cut -c1-8)\" && node --preserve-symlinks \"$PROJECT_CACHE_DIR/node_modules/typescript/bin/tsc\" --noEmit false --rewriteRelativeImportExtensions true --outDir \"$PROJECT_CACHE_DIR/dist\" --typeRoots \"$PROJECT_CACHE_DIR/node_modules/@types\" --types node && node --test \"$PROJECT_CACHE_DIR/dist/tests/abstractions.test.js\" && node --experimental-strip-types --disable-warning=ExperimentalWarning --test skills/protocol-consolidation/variant-table/tests/*.test.ts"
   },
   "dependencies": {
     "effect": "^3.14.0"

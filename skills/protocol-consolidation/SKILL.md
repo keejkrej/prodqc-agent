@@ -5,8 +5,10 @@ description: >-
   Center wiki into one sourced draft. Use when mapping a wiki graph, grouping
   pages for the same assay, comparing versions against a shared checks library,
   drafting a merged protocol that never invents unread values, listing owner
-  decisions, or proposing a new generic check after a decision. Requires
-  mcp-atlassian in READ_ONLY_MODE, the PR 4 Confluence extras
+  decisions, proposing a new generic check after a decision, extracting a
+  structured variant field table, comparing two labs' tables, or diffing a
+  paper's methods against the protocol version current before submission.
+  Requires mcp-atlassian in READ_ONLY_MODE, the PR 4 Confluence extras
   (get_page_links, build_space_graph, get_history), and the protocol drafting
   CLI. Never write to the wiki. Never commit real lab protocol text.
 ---
@@ -15,7 +17,7 @@ description: >-
 
 Turn 2–5 local versions of **one assay family** into one sourced draft plus owner decisions. **Self-improvement is the point:** every resolved decision should become a candidate check in `checks/<assay-type>.md` so the next lab’s run catches that error class automatically.
 
-Do not invent unread values. Do not write, move, or delete wiki pages. Do not commit real protocol text (use gitignored `runs/` and `input/` / `output/`). Share across labs **only** generic checks (`assay`, `rule`, `reason`), owner accept/reject verdicts (these weight the rules), anonymised outcome summaries **per structured variant**, and proposed check changes. Protocols and raw data never leave the lab. Headline metric: rate at which **new-lab** owners accept the checks. See [docs/cross-lab-loop.md](../../docs/cross-lab-loop.md).
+Do not invent unread values. Do not write, move, or delete wiki pages. Do not commit real protocol text (use gitignored `runs/` and `input/` / `output/`). Share across labs **only** generic checks (`assay`, `rule`, `reason`), owner accept/reject verdicts (these weight the rules), anonymised outcome summaries **per structured variant**, **variant field tables** (values + `{file,line}`, no protocol text), and proposed check changes. Protocols and raw data never leave the lab. Headline metric: rate at which **new-lab** owners accept the checks. See [docs/cross-lab-loop.md](../../docs/cross-lab-loop.md).
 
 ## When to use
 
@@ -28,6 +30,7 @@ The owner named one assay family and the wiki spaces to stay inside. Claude Code
 | Search, get page, children, tree, attachments | [mcp-atlassian](https://github.com/sooperset/mcp-atlassian) with `READ_ONLY_MODE=true` |
 | Page graph, parsed outgoing links, version list | PR 4 extras: `build_space_graph`, `get_page_links`, `get_history` |
 | Sourced drafts, comparison, `--summary-only` counts | Protocol drafting CLI (`npm run draft:protocol`) |
+| Extract / compare fixed variant fields (no protocol text) | `npm run variant-table -- extract\|compare\|methods-vs-wiki` |
 
 If a tool would POST/PUT/DELETE to Confluence, stop.
 
@@ -42,6 +45,12 @@ If a tool would POST/PUT/DELETE to Confluence, stop.
 
 Worked **synthetic** example (RiboGreen encapsulation efficiency): [examples/SYNTHETIC-ribogreen-ee/](examples/SYNTHETIC-ribogreen-ee/). Not a real lab SOP.
 
+## Cross-lab comparison mode
+
+Each lab runs a **local** extract of the assay’s fixed variant fields, each with a `{file,line}` source pointer. Export **only** that field table. `compare` diffs two labs into a mismatch report. `methods-vs-wiki` diffs a paper’s methods extract against the protocol version current before the submission date. [references/compare-mode.md](references/compare-mode.md). Lab graph: [docs/lab-ontology.md](../../docs/lab-ontology.md).
+
+Synthetic labs: [variant-table/fixtures/SYNTHETIC-lab-north](variant-table/fixtures/SYNTHETIC-lab-north/) and [SYNTHETIC-lab-south](variant-table/fixtures/SYNTHETIC-lab-south/).
+
 ## Run folder (private)
 
 ```
@@ -51,6 +60,8 @@ runs/<run-id>/          # gitignored; never commit
   checklist-hits.md
   input/                # 2–5 version files for the CLI
   output/               # *.draft.json, comparison.md, pitch-summary.json
+  variant-table.json    # exportable field table (no protocol text)
+  mismatch-report.json  # compare output
   open-decisions.md
   proposed-checks/*.diff
   qc-results.json          # each row: protocol_page_id, protocol_version, variant
@@ -66,6 +77,7 @@ Pitch slides use `--summary-only` counts only. Cross-lab loop and JSON schemas: 
 - Institution-approved or local model only; otherwise skip infer and keep values unfilled.
 - Keep “until clear” / observation-gated branches; do not flatten them.
 - Units as UCUM when present in source.
-- Every QC result and signed-off record must include `protocol_page_id`, `protocol_version`, and a structured `variant` (RiboGreen: `dye_dilution`, `triton_standard_curve`, `well_volume_uL`). Free text only in `variant.notes`.
+- Every QC result and signed-off record must include `protocol_page_id`, `protocol_version`, and a structured `variant` (RiboGreen: `dye_dilution`, `triton_standard_curve`, `curve_well_volume_uL`, `sample_well_volume_uL`, `incubation_time_min`, `incubation_temperature_C`, `ee_formula`, `excitation_nm`, `emission_nm`). Free text only in `variant.notes`.
+- Cross-lab export is the field table only — values plus `{file,line}`. No excerpts, notes, or protocol text.
 - Check library changes are diffs + human approval, never silent edits. A new lab adopts a proposal only when its owner signs off.
 - Generic issue classes belong in `checks/`. Lab-specific numbers and page titles do not.

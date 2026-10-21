@@ -8,7 +8,7 @@ status: proposed
 
 Generic scientific error classes for this assay type. No lab names, page titles, or site-specific numbers.
 
-List the **fixed variant fields** for this assay (name, type). Free text only in `notes`. QC results and sign-offs must carry `protocol_page_id`, `protocol_version`, and that variant.
+List the **fixed variant fields** for this assay (name, type). Free text only in `notes`. QC results and sign-offs must carry `protocol_page_id`, `protocol_version`, and that variant. Cross-lab export is that field table (values + `{file,line}`), never protocol text.
 
 ## How to apply
 

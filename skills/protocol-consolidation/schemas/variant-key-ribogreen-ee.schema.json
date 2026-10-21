@@ -5,11 +5,31 @@
   "description": "Shareable variant key: same fixed fields as the local variant, without notes.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["assay_type", "dye_dilution", "triton_standard_curve", "well_volume_uL"],
+  "required": [
+    "assay_type",
+    "dye_dilution",
+    "triton_standard_curve",
+    "curve_well_volume_uL",
+    "sample_well_volume_uL",
+    "incubation_time_min",
+    "incubation_temperature_C",
+    "ee_formula",
+    "excitation_nm",
+    "emission_nm"
+  ],
   "properties": {
     "assay_type": { "const": "ribogreen-ee" },
     "dye_dilution": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
     "triton_standard_curve": { "type": "boolean" },
-    "well_volume_uL": { "type": "number", "exclusiveMinimum": 0 }
+    "curve_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+    "sample_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+    "incubation_time_min": { "type": "number", "exclusiveMinimum": 0 },
+    "incubation_temperature_C": { "type": "number" },
+    "ee_formula": {
+      "type": "string",
+      "enum": ["1-(free/total)", "total/free", "free/total"]
+    },
+    "excitation_nm": { "type": "number", "exclusiveMinimum": 0 },
+    "emission_nm": { "type": "number", "exclusiveMinimum": 0 }
   }
 }

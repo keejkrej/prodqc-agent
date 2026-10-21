@@ -35,7 +35,11 @@ One heading per `D-*` id: check_id, excerpts, owner question, `status` (`open` |
 
 ## qc-results.json / signed-off.json
 
-Each object **must** include `protocol_page_id`, `protocol_version`, and `variant` (see [qc-result.schema.json](qc-result.schema.json), [signed-off-record.schema.json](signed-off-record.schema.json)). RiboGreen `variant`: `dye_dilution`, `triton_standard_curve`, `well_volume_uL`, `notes`. These files never leave the lab.
+Each object **must** include `protocol_page_id`, `protocol_version`, and `variant` (see [qc-result.schema.json](qc-result.schema.json), [signed-off-record.schema.json](signed-off-record.schema.json)). RiboGreen `variant`: `dye_dilution`, `triton_standard_curve`, `curve_well_volume_uL`, `sample_well_volume_uL`, `incubation_time_min`, `incubation_temperature_C`, `ee_formula`, `excitation_nm`, `emission_nm`, `notes`. These files never leave the lab.
+
+## variant-table.json
+
+Exportable field table produced by `npm run variant-table -- extract`. Schema: [variant-table.schema.json](variant-table.schema.json). Values plus `{file,line}` only — no excerpts. Compare output: [mismatch-report.schema.json](mismatch-report.schema.json).
 
 ## anonymised-counts.json
 

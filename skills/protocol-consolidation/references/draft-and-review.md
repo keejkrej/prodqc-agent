@@ -24,7 +24,7 @@ If `PROTOCOL_DRAFT_MODEL` is not an institution-approved or local model, **do no
 
 There is no merged `*.draft.json` until the owner resolves conflicts. The “merged protocol” in this skill is: CLI drafts + checklist hits + `open-decisions.md`. After review, a human (not the agent) chooses which sourced values survive.
 
-When this family later produces QC results or sign-offs, each record must carry `protocol_page_id`, `protocol_version`, and the assay’s structured `variant` ([provenance-and-variant.md](provenance-and-variant.md)). Do not stash method choices in a notes blob.
+When this family later produces QC results or sign-offs, each record must carry `protocol_page_id`, `protocol_version`, and the assay’s structured `variant` ([provenance-and-variant.md](provenance-and-variant.md)). Do not stash method choices in a notes blob. For a shareable field table (no protocol text), run `npm run variant-table -- extract` on the same `input/` ([compare-mode.md](compare-mode.md)).
 
 ## 5. Open decisions for the assay owner
 

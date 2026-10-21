@@ -11,6 +11,7 @@ Lab A (private wiki, private runs)
   → publish SharedCheck { assay, rule, reason }
   → publish CheckVerdict { accept | reject }   // weights the rule
   → publish OutcomeSummary per structured variant (counts only)
+  → publish VariantTable { lab_id, assay, fields[name]={value, source:{file,line}} }
   → publish ProposedChange { assay, rule, reason }
 
 Lab B (new)
@@ -37,6 +38,7 @@ Use `lab_novelty: "new"` on the verdict. Returning labs still weight rules (`acc
 | Shared check | `assay`, `rule`, `reason` (+ `id`, `library_version`) | The generic error class |
 | Verdict | `accept` / `reject` on a `check_id` | Weights that rule |
 | Outcome summary | counts keyed by **structured variant** (no notes) | How that method shape fared, without values |
+| Variant field table | `lab_id`, `assay`, `fields[name]={value, source:{file,line}}` | Compare method shape; no protocol text |
 | Proposed change | same shape as a check, `status: proposed` | Adopted only after the **receiving** lab’s owner signs off |
 
 ## What never leaves
@@ -45,6 +47,7 @@ Use `lab_novelty: "new"` on the verdict. Returning labs still weight rules (`acc
 - `protocol_page_id`, owner names, space keys, titles, excerpts
 - Raw QC values, plate files, instrument exports
 - Variant `notes` (the only free-text field on a variant)
+- Lab ontology graphs (local; see [lab-ontology.md](lab-ontology.md))
 
 ## Provenance on every local QC and sign-off
 
@@ -63,7 +66,13 @@ RiboGreen EE variant fields:
 | `assay_type` | `"ribogreen-ee"` | Discriminator |
 | `dye_dilution` | string ratio (`1:100`) | Not a paragraph |
 | `triton_standard_curve` | boolean | Lysed standard curve present? |
-| `well_volume_uL` | number | Microlitres |
+| `curve_well_volume_uL` | number | Standard-curve well, microlitres |
+| `sample_well_volume_uL` | number | Sample well, microlitres |
+| `incubation_time_min` | number | Minutes |
+| `incubation_temperature_C` | number | Degrees Celsius |
+| `ee_formula` | `1-(free/total)` \| `total/free` \| `free/total` | Normalised expression |
+| `excitation_nm` | number | Nanometres |
+| `emission_nm` | number | Nanometres |
 | `notes` | string | Only free text; local only |
 
 Other assay types get their own fixed set in `schemas/variant-<assay>.schema.json`. Do not add ad-hoc keys.
@@ -148,12 +157,29 @@ Rule weight for check *c* is the sum of `weight_delta` (default `+1` / `−1`). 
     "variant": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["assay_type", "dye_dilution", "triton_standard_curve", "well_volume_uL"],
+      "required": [
+        "assay_type",
+        "dye_dilution",
+        "triton_standard_curve",
+        "curve_well_volume_uL",
+        "sample_well_volume_uL",
+        "incubation_time_min",
+        "incubation_temperature_C",
+        "ee_formula",
+        "excitation_nm",
+        "emission_nm"
+      ],
       "properties": {
         "assay_type": { "const": "ribogreen-ee" },
         "dye_dilution": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
         "triton_standard_curve": { "type": "boolean" },
-        "well_volume_uL": { "type": "number", "exclusiveMinimum": 0 }
+        "curve_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+        "sample_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+        "incubation_time_min": { "type": "number", "exclusiveMinimum": 0 },
+        "incubation_temperature_C": { "type": "number" },
+        "ee_formula": { "enum": ["1-(free/total)", "total/free", "free/total"] },
+        "excitation_nm": { "type": "number", "exclusiveMinimum": 0 },
+        "emission_nm": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
     "n_qc_results": { "type": "integer", "minimum": 0 },
@@ -174,7 +200,13 @@ Example (synthetic counts, no measurements):
     "assay_type": "ribogreen-ee",
     "dye_dilution": "1:200",
     "triton_standard_curve": true,
-    "well_volume_uL": 100
+    "curve_well_volume_uL": 100,
+    "sample_well_volume_uL": 100,
+    "incubation_time_min": 5,
+    "incubation_temperature_C": 25,
+    "ee_formula": "1-(free/total)",
+    "excitation_nm": 485,
+    "emission_nm": 530
   },
   "n_qc_results": 8,
   "n_signed_off": 8,
@@ -189,3 +221,5 @@ Example (synthetic counts, no measurements):
 Same `{ assay, rule, reason }` core as a check, plus `kind` and `status`. A lab that receives a proposal **does not auto-merge**. Its assay owner must sign off (`status` → `adopted`) or reject. Until then the local `checks/` file is unchanged.
 
 See `skills/protocol-consolidation/schemas/proposed-change.schema.json`.
+
+Compare mode (field tables, mismatch report): `skills/protocol-consolidation/references/compare-mode.md`. Lab ontology (local graph, methods vs wiki): [lab-ontology.md](lab-ontology.md).

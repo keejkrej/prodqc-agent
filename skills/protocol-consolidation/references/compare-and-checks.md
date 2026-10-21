@@ -8,7 +8,7 @@ If no file exists for the assay type, copy `checks/_template.md` into a proposed
 
 ## Side-by-side
 
-For each shortlisted version, extract only what the checklist asks (curves present or not, formula shape, dilution statements, volumes). Put hits in `runs/<run-id>/checklist-hits.md`:
+For each shortlisted version, extract only what the checklist asks (curves present or not, formula shape, dilution statements, volumes, incubation, wavelengths). Prefer the local variant-table CLI so the same fields can be exported without protocol text. Put hits in `runs/<run-id>/checklist-hits.md`:
 
 ```
 ## check-id

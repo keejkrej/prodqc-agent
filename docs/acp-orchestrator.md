@@ -20,7 +20,7 @@ Once the skill’s six steps and the checks-library diff loop are boringly famil
 3. **Collect drafts** — gather CLI `comparison.md` and `--summary-only` counts; never lift protocol bodies into a central model account.
 4. **Queue reviews** — turn `open-decisions.md` into a single owner queue (accepted / corrected / deferred) and a colleague review queue for comparisons.
 5. **Aggregate check proposals** — merge `proposed-checks/*.diff` across runs by `assay_type` + `check_id`, dedupe generic wording, and present **one** human-approval batch for `checks/` + `CHANGELOG.md`. Still no silent library edits.
-6. **Cross-lab loop** — roll up shared checks, verdicts (rule weights), and per-variant outcome summaries. Headline metric is new-lab check accept rate. See [cross-lab-loop.md](cross-lab-loop.md). Still no protocols or raw data.
+6. **Cross-lab loop** — roll up shared checks, verdicts (rule weights), per-variant outcome summaries, and variant **field tables** (no protocol text). Headline metric is new-lab check accept rate. See [cross-lab-loop.md](cross-lab-loop.md). Still no protocols or raw data. Lab ontology stays local ([lab-ontology.md](lab-ontology.md)).
 
 ## What it must not do
 

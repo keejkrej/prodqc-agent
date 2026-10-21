@@ -1,6 +1,6 @@
 ---
 assay_type: ribogreen-ee
-library_version: 0.1.0
+library_version: 0.2.0
 status: accepted
 ---
 
@@ -12,7 +12,7 @@ Applies to fluorescence-based nucleic-acid encapsulation efficiency (EE) assays 
 
 For each shortlisted version: `hit`, `clear`, or `unknown`. Quote an excerpt in the private run folder only.
 
-QC results and sign-offs for this assay must use the fixed variant `{ dye_dilution, triton_standard_curve, well_volume_uL, notes }`. Free text only in `notes`.
+QC results and sign-offs for this assay must use the fixed variant `{ dye_dilution, triton_standard_curve, curve_well_volume_uL, sample_well_volume_uL, incubation_time_min, incubation_temperature_C, ee_formula, excitation_nm, emission_nm, notes }`. Free text only in `notes`. Cross-lab export is the field table (values + `{file,line}`), never the page body.
 
 ## Checks
 
@@ -43,3 +43,10 @@ QC results and sign-offs for this assay must use the fixed variant `{ dye_diluti
 - **Flag when:** standard-curve well volume and sample well volume differ inside one version, or versions disagree on well volume, with no reason recorded.
 - **Clear when:** curve and sample wells use the same stated volume, or a stated reason for a difference.
 - **Do not encode:** a canonical microlitre value for all labs.
+
+### methods-vs-wiki
+
+- **Class:** methods vs current protocol
+- **Flag when:** a paper’s methods section, extracted to the fixed variant fields, disagrees with the protocol version that was current immediately before the paper’s submission date (`valid_from ≤ submitted < valid_to`).
+- **Clear when:** those extracted fields match that protocol version’s field table.
+- **Do not encode:** titles, authors, or methods prose. Diff field tables only.

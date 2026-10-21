@@ -9,7 +9,13 @@
     "assay_type",
     "dye_dilution",
     "triton_standard_curve",
-    "well_volume_uL",
+    "curve_well_volume_uL",
+    "sample_well_volume_uL",
+    "incubation_time_min",
+    "incubation_temperature_C",
+    "ee_formula",
+    "excitation_nm",
+    "emission_nm",
     "notes"
   ],
   "properties": {
@@ -25,10 +31,39 @@
       "type": "boolean",
       "description": "True if a lysed (Triton) standard curve is described or used."
     },
-    "well_volume_uL": {
+    "curve_well_volume_uL": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Assay well volume in microlitres."
+      "description": "Standard-curve well volume in microlitres."
+    },
+    "sample_well_volume_uL": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Sample well volume in microlitres."
+    },
+    "incubation_time_min": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Dye incubation time in minutes."
+    },
+    "incubation_temperature_C": {
+      "type": "number",
+      "description": "Dye incubation temperature in degrees Celsius."
+    },
+    "ee_formula": {
+      "type": "string",
+      "enum": ["1-(free/total)", "total/free", "free/total"],
+      "description": "Normalised EE expression. Equivalents of 1-(free/total) include (total-free)/total."
+    },
+    "excitation_nm": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Excitation wavelength in nanometres."
+    },
+    "emission_nm": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Emission wavelength in nanometres."
     },
     "notes": {
       "type": "string",

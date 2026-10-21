@@ -1,0 +1,96 @@
+{
+  "disclaimer": "SYNTHETIC graph. Not a real lab, paper, or instrument.",
+  "entities": {
+    "assay_types": [
+      { "id": "ribogreen-ee", "label": "RiboGreen encapsulation efficiency" }
+    ],
+    "protocol_versions": [
+      {
+        "id": "pv-N101-v1",
+        "page_id": "N101",
+        "version": 1,
+        "valid_from": "2024-01-01",
+        "valid_to": "2025-06-01",
+        "assay_type": "ribogreen-ee"
+      },
+      {
+        "id": "pv-N101-v2",
+        "page_id": "N101",
+        "version": 2,
+        "valid_from": "2025-06-01",
+        "valid_to": null,
+        "assay_type": "ribogreen-ee"
+      }
+    ],
+    "datasets": [
+      {
+        "id": "ds-north-plate-1",
+        "path": "runs/synthetic/north-plate-1.csv",
+        "date": "2026-01-15",
+        "owner": "person:operator"
+      }
+    ],
+    "publications": [
+      {
+        "id": "pub-synthetic-1",
+        "doi": "10.0000/SYNTHETIC.ribogreen.1",
+        "figures": ["fig-1"],
+        "submitted": "2025-11-01"
+      }
+    ],
+    "figures": [{ "id": "fig-1", "label": "Figure 1" }],
+    "instruments": [
+      { "id": "inst-plate-reader-sim", "kind": "fluorescence_plate_reader" }
+    ],
+    "people": [
+      { "id": "person:operator", "role": "operator" },
+      { "id": "person:assay_owner", "role": "assay_owner" }
+    ],
+    "checks": [
+      { "id": "methods-vs-wiki", "assay": "ribogreen-ee" },
+      { "id": "inverted-ee-formula", "assay": "ribogreen-ee" }
+    ]
+  },
+  "edges": [
+    {
+      "type": "ran_under",
+      "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "reported_in",
+      "from": { "kind": "figure", "id": "fig-1" },
+      "to": { "kind": "publication", "id": "pub-synthetic-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "derived_from",
+      "from": { "kind": "figure", "id": "fig-1" },
+      "to": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "provenance": {
+        "kind": "inferred",
+        "reason": "Figure date after dataset date; same assay family; caption does not name the file."
+      }
+    },
+    {
+      "type": "supersedes",
+      "from": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v1" },
+      "provenance": {
+        "kind": "inferred",
+        "reason": "get_history: version 2 follows version 1 on page N101."
+      }
+    },
+    {
+      "type": "applies_to",
+      "from": { "kind": "check", "id": "methods-vs-wiki" },
+      "to": { "kind": "assay_type", "id": "ribogreen-ee" },
+      "provenance": {
+        "kind": "confirmed",
+        "who": "person:assay_owner",
+        "when": "2026-01-15T16:00:00.000Z"
+      }
+    }
+  ]
+}
