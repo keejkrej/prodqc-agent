@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/check-verdict.json",
+  "title": "CheckVerdict",
+  "description": "Owner accept/reject of a shared check. Weights the rule. No owner name, page id, or protocol text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["check_id", "assay", "verdict", "lab_novelty", "at"],
+  "properties": {
+    "check_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assay": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["accept", "reject"],
+      "description": "accept increases the rule's weight; reject decreases it."
+    },
+    "lab_novelty": {
+      "type": "string",
+      "enum": ["new", "returning"],
+      "description": "new = this lab has not previously verdicted this check. Headline metric uses new-lab accepts."
+    },
+    "weight_delta": {
+      "type": "integer",
+      "enum": [-1, 1],
+      "description": "Optional explicit delta; default +1 for accept, -1 for reject."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

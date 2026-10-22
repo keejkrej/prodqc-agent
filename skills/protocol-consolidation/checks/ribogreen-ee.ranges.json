@@ -1,0 +1,9 @@
+{
+  "unit": "ug/mL",
+  "ucum": "ug/mL",
+  "comment": "Configurable in-well linear ranges keyed by working dye dilution. 1:200 is the kit high-range (linear up to ~1 ug/mL in-well). Edit this file; do not hard-code lab-specific cutoffs in checks/ribogreen-ee.md.",
+  "ranges": {
+    "1:200": { "label": "high-range", "min": 0.02, "max": 1.0 },
+    "1:2000": { "label": "low-range", "min": 0.001, "max": 0.05 }
+  }
+}

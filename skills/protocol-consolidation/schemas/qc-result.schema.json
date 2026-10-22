@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/qc-result.json",
+  "title": "QcResult",
+  "description": "Local QC result envelope. Must carry protocol_page_id, protocol_version, and a structured variant. Extra keys are lab-private measurements and must not be copied into shared objects.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "protocol_page_id",
+    "protocol_version",
+    "variant",
+    "metric",
+    "recorded_at"
+  ],
+  "properties": {
+    "protocol_page_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Confluence content id of the protocol page this result was run against."
+    },
+    "protocol_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Confluence content version number from get_history."
+    },
+    "variant": {
+      "$ref": "variant-ribogreen-ee.schema.json"
+    },
+    "metric": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ucum": {
+      "type": ["string", "null"]
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+# SYNTHETIC wiki v1 — RiboGreen EE (superseded)
+
+Disclaimer: fictional method fragment. Not a lab protocol.
+
+Prepare a lysed (Triton) standard curve only. No unlysed standard curve is described.
+
+Working dye dilution: 1:100.
+
+Load 200 µL per well.
+
+Lyse 15 min at 22 °C.
+
+Dye incubation 10 min in the light.
+
+Triton final concentration: 0.1 %.
+
+Sample dilution: 2 ug/mL.
+
+Triton blank: no. Water blank: yes.
+
+Encapsulation efficiency is reported as total/free.
+
+Excitation 485 nm. Emission 520 nm.

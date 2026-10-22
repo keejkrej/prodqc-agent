@@ -1,0 +1,30 @@
+{
+  "disclaimer": "SYNTHETIC fixture. Not a real wiki.",
+  "spaceKey": "SYNTH",
+  "generatedAt": "2026-01-15T12:00:00.000Z",
+  "pageCount": 13,
+  "edgeCount": 4,
+  "emptyCount": 1,
+  "staleCount": 1,
+  "bulkImportSuspectCount": 8,
+  "stalenessThreshold": "24 months (owner-supplied example)",
+  "nodes": [
+    { "id": "100", "title": "SYNTHETIC QC home", "type": "page" },
+    { "id": "101", "title": "SYNTHETIC RiboGreen EE (older)", "type": "page" },
+    { "id": "102", "title": "SYNTHETIC RiboGreen EE (current)", "type": "page" },
+    { "id": "103", "title": "SYNTHETIC EE lab notes", "type": "page" },
+    { "id": "104", "title": "SYNTHETIC EE template (do not use)", "type": "page" }
+  ],
+  "edges": [
+    { "type": "parent", "from": "100", "to": "101" },
+    { "type": "parent", "from": "100", "to": "102" },
+    { "type": "link", "from": "102", "to": "103", "label": "lab notes" },
+    { "type": "link", "from": "102", "to": "101", "label": "previous" }
+  ],
+  "signals": [
+    { "id": "101", "versions": 2, "lastWhen": "2024-03-01T00:00:00.000Z", "empty": false, "stale": false, "bulkImportSuspect": false },
+    { "id": "102", "versions": 3, "lastWhen": "2025-11-01T00:00:00.000Z", "empty": false, "stale": false, "bulkImportSuspect": false },
+    { "id": "103", "versions": 1, "lastWhen": "2022-06-01T00:00:00.000Z", "empty": false, "stale": true, "bulkImportSuspect": false },
+    { "id": "104", "versions": 1, "lastWhen": "2021-01-01T00:00:00.000Z", "empty": true, "stale": true, "bulkImportSuspect": false }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/signed-off-record.json",
+  "title": "SignedOffRecord",
+  "description": "Local human sign-off envelope. Same provenance fields as QC results. Extra keys (signer name, reasons) stay in the lab.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "protocol_page_id",
+    "protocol_version",
+    "variant",
+    "outcome",
+    "signed_at"
+  ],
+  "properties": {
+    "protocol_page_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "protocol_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "variant": {
+      "$ref": "variant-ribogreen-ee.schema.json"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["accepted", "overridden"]
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

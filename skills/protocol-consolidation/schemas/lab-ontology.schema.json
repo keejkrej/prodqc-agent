@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/lab-ontology.json",
+  "title": "LabOntology",
+  "description": "Local lab graph. Person records carry a role only (no names). Edges always carry provenance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entities", "edges"],
+  "properties": {
+    "disclaimer": { "type": "string" },
+    "entities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assay_types",
+        "protocol_versions",
+        "runs",
+        "datasets",
+        "publications",
+        "figures",
+        "instruments",
+        "people",
+        "checks"
+      ],
+      "properties": {
+        "assay_types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assayType" }
+        },
+        "protocol_versions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/protocolVersion" }
+        },
+        "runs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/run" }
+        },
+        "datasets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dataset" }
+        },
+        "publications": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publication" }
+        },
+        "figures": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/figure" }
+        },
+        "instruments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/instrument" }
+        },
+        "people": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/person" }
+        },
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/check" }
+        },
+        "reagents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reagent" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "assayType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "obi_id": {
+          "type": "string",
+          "pattern": "^OBI:[0-9]+$",
+          "description": "Optional OBI term. RiboGreen EE uses the generic assay OBI:0000070. Never invent an ID."
+        }
+      }
+    },
+    "reagent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "chebi_id": {
+          "oneOf": [
+            { "type": "string", "pattern": "^CHEBI:[0-9]+$" },
+            { "type": "null" }
+          ],
+          "description": "Optional ChEBI ID (CHEBI:n). Null/omit when no term exists (RiboGreen). Never invent an ID."
+        }
+      }
+    },
+    "protocolVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "page_id", "version", "valid_from", "valid_to", "assay_type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "page_id": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1 },
+        "valid_from": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "valid_to": { "type": ["string", "null"] },
+        "assay_type": { "type": "string", "minLength": 1 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "date"],
+      "description": "A lab activity (prov:Activity). ran_under and measured_on hang off Run, not Dataset.",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "operator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person id with role operator, not a display name."
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "date", "owner"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person id (role-bearing), not a display name."
+        }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "doi", "figures"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "doi": { "type": "string", "minLength": 1 },
+        "figures": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "submitted": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+      }
+    },
+    "figure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" }
+      }
+    },
+    "instrument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 }
+      }
+    },
+    "person": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "role": {
+          "type": "string",
+          "enum": ["assay_owner", "approver", "operator", "scientific_advisor", "colleague_reviewer"]
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "assay"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "assay": { "type": "string", "minLength": 1 }
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "assay_type",
+            "protocol_version",
+            "run",
+            "dataset",
+            "publication",
+            "figure",
+            "instrument",
+            "person",
+            "check"
+          ]
+        },
+        "id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenance": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "stated" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "reason"],
+          "properties": {
+            "kind": { "const": "inferred" },
+            "reason": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "who", "when"],
+          "properties": {
+            "kind": { "const": "confirmed" },
+            "who": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Person id, not a name."
+            },
+            "when": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "from", "to", "provenance"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "generated_by",
+            "ran_under",
+            "measured_on",
+            "reported_in",
+            "derived_from",
+            "supersedes",
+            "applies_to",
+            "owns",
+            "approved"
+          ]
+        },
+        "from": { "$ref": "#/$defs/endpoint" },
+        "to": { "$ref": "#/$defs/endpoint" },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      }
+    }
+  }
+}

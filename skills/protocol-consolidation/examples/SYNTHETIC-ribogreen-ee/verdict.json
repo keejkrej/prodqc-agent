@@ -1,0 +1,8 @@
+{
+  "check_id": "ee-formula-error",
+  "assay": "ribogreen-ee",
+  "verdict": "accept",
+  "lab_novelty": "new",
+  "weight_delta": 1,
+  "at": "2026-01-16T09:00:00.000Z"
+}

@@ -1,0 +1,159 @@
+{
+  "disclaimer": "SYNTHETIC graph. Not a real lab, paper, or instrument.",
+  "entities": {
+    "assay_types": [
+      {
+        "id": "ribogreen-ee",
+        "label": "RiboGreen encapsulation efficiency",
+        "obi_id": "OBI:0000070"
+      }
+    ],
+    "reagents": [
+      { "id": "triton-x100", "label": "Triton X-100", "chebi_id": "CHEBI:9750" },
+      { "id": "ribogreen", "label": "Quant-iT RiboGreen", "chebi_id": null }
+    ],
+    "protocol_versions": [
+      {
+        "id": "pv-N101-v1",
+        "page_id": "N101",
+        "version": 1,
+        "valid_from": "2024-01-01",
+        "valid_to": "2025-06-01",
+        "assay_type": "ribogreen-ee"
+      },
+      {
+        "id": "pv-N101-v2",
+        "page_id": "N101",
+        "version": 2,
+        "valid_from": "2025-06-01",
+        "valid_to": null,
+        "assay_type": "ribogreen-ee"
+      }
+    ],
+    "runs": [
+      {
+        "id": "run-paper-ee-1",
+        "date": "2025-09-15",
+        "operator": "person:operator"
+      },
+      {
+        "id": "run-north-plate-1",
+        "date": "2026-01-15",
+        "operator": "person:operator"
+      }
+    ],
+    "datasets": [
+      {
+        "id": "ds-paper-ee-1",
+        "path": "s3://simulated-prodqc/synthetic-ribogreen/paper-ee-1.json",
+        "date": "2025-09-15",
+        "owner": "person:operator"
+      },
+      {
+        "id": "ds-north-plate-1",
+        "path": "s3://simulated-prodqc/synthetic-ribogreen/north-plate-1.json",
+        "date": "2026-01-15",
+        "owner": "person:operator"
+      }
+    ],
+    "publications": [
+      {
+        "id": "pub-synthetic-1",
+        "doi": "10.0000/SYNTHETIC.ribogreen.1",
+        "figures": ["fig-1"],
+        "submitted": "2025-11-01"
+      }
+    ],
+    "figures": [{ "id": "fig-1", "label": "Figure 1" }],
+    "instruments": [
+      { "id": "inst-plate-reader-sim", "kind": "fluorescence_plate_reader" }
+    ],
+    "people": [
+      { "id": "person:operator", "role": "operator" },
+      { "id": "person:assay_owner", "role": "assay_owner" },
+      { "id": "person:approver", "role": "approver" }
+    ],
+    "checks": [
+      { "id": "methods-vs-wiki", "assay": "ribogreen-ee" },
+      { "id": "ee-formula-error", "assay": "ribogreen-ee" },
+      { "id": "in-well-conc-out-of-range", "assay": "ribogreen-ee" }
+    ]
+  },
+  "edges": [
+    {
+      "type": "generated_by",
+      "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "to": { "kind": "run", "id": "run-north-plate-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "generated_by",
+      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "to": { "kind": "run", "id": "run-paper-ee-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "ran_under",
+      "from": { "kind": "run", "id": "run-north-plate-1" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "ran_under",
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "measured_on",
+      "from": { "kind": "run", "id": "run-north-plate-1" },
+      "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "measured_on",
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
+      "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "owns",
+      "from": { "kind": "person", "id": "person:assay_owner" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "approved",
+      "from": { "kind": "person", "id": "person:approver" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "reported_in",
+      "from": { "kind": "figure", "id": "fig-1" },
+      "to": { "kind": "publication", "id": "pub-synthetic-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "derived_from",
+      "from": { "kind": "figure", "id": "fig-1" },
+      "to": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "supersedes",
+      "from": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v1" },
+      "provenance": {
+        "kind": "inferred",
+        "reason": "get_history: version 2 follows version 1 on page N101."
+      }
+    },
+    {
+      "type": "applies_to",
+      "from": { "kind": "check", "id": "methods-vs-wiki" },
+      "to": { "kind": "assay_type", "id": "ribogreen-ee" },
+      "provenance": { "kind": "stated" }
+    }
+  ]
+}

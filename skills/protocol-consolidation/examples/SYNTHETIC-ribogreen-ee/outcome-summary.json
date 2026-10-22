@@ -1,0 +1,28 @@
+{
+  "assay": "ribogreen-ee",
+  "variant": {
+    "assay_type": "ribogreen-ee",
+    "dye_dilution": "1:200",
+    "triton_standard_curve": true,
+    "triton_final_conc_pct": 0.5,
+    "curve_well_volume_uL": 100,
+    "sample_well_volume_uL": 100,
+    "sample_dilution_ug_per_mL": 0.5,
+    "lysis_time_min": 10,
+    "lysis_temperature_C": 37,
+    "dye_incubation_time_min": 5,
+    "dye_incubation_light": "dark",
+    "blank_subtraction": {
+      "triton_blank": true,
+      "water_blank": true
+    },
+    "ee_formula": "1-(free/total)",
+    "excitation_nm": 485,
+    "emission_nm": 530
+  },
+  "n_qc_results": 8,
+  "n_signed_off": 8,
+  "n_spec_miss": 2,
+  "n_accepted_signoff": 7,
+  "n_overridden_signoff": 1
+}

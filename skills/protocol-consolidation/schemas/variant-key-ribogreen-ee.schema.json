@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://prodqc.example/schema/variant-key-ribogreen-ee.json",
+  "title": "RibogreenEeVariantKey",
+  "description": "Shareable variant key: same fixed fields as the local variant, without notes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assay_type",
+    "dye_dilution",
+    "triton_standard_curve",
+    "triton_final_conc_pct",
+    "curve_well_volume_uL",
+    "sample_well_volume_uL",
+    "sample_dilution_ug_per_mL",
+    "lysis_time_min",
+    "lysis_temperature_C",
+    "dye_incubation_time_min",
+    "dye_incubation_light",
+    "blank_subtraction",
+    "ee_formula",
+    "excitation_nm",
+    "emission_nm"
+  ],
+  "properties": {
+    "assay_type": { "const": "ribogreen-ee" },
+    "dye_dilution": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
+    "triton_standard_curve": { "type": "boolean" },
+    "triton_final_conc_pct": { "type": "number", "exclusiveMinimum": 0 },
+    "reagents": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional chebi_id on reagent fields for JSON-LD export. Null/omit when no term exists.",
+      "properties": {
+        "triton_x100": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chebi_id": { "type": "string", "pattern": "^CHEBI:[0-9]+$" }
+          }
+        },
+        "ribogreen": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chebi_id": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "curve_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+    "sample_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
+    "sample_dilution_ug_per_mL": { "type": "number", "exclusiveMinimum": 0 },
+    "lysis_time_min": { "type": "number", "exclusiveMinimum": 0 },
+    "lysis_temperature_C": { "type": "number" },
+    "dye_incubation_time_min": { "type": "number", "exclusiveMinimum": 0 },
+    "dye_incubation_light": { "type": "string", "enum": ["dark", "light"] },
+    "blank_subtraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["triton_blank", "water_blank"],
+      "properties": {
+        "triton_blank": { "type": "boolean" },
+        "water_blank": { "type": "boolean" }
+      }
+    },
+    "ee_formula": {
+      "type": "string",
+      "enum": ["1-(free/total)", "total/free", "free/total"]
+    },
+    "excitation_nm": { "type": "number", "exclusiveMinimum": 0 },
+    "emission_nm": { "type": "number", "exclusiveMinimum": 0 }
+  }
+}
