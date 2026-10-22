@@ -26,21 +26,67 @@ export const selectCurrentBefore = (
   return selected
 }
 
-export const datasetDatesForPublication = (graph: LabOntology, publicationId: string): string[] => {
+export const datasetIdsForPublication = (graph: LabOntology, publicationId: string): string[] => {
   const pub = graph.entities.publications.find((item) => item.id === publicationId)
   if (!pub) return []
   const figureIds = new Set(pub.figures)
-  const datasetIds = new Set(
-    graph.edges
-      .filter(
-        (edge) =>
-          edge.type === "derived_from" &&
-          edge.from.kind === "figure" &&
-          figureIds.has(edge.from.id) &&
-          edge.to.kind === "dataset"
-      )
-      .map((edge) => edge.to.id)
-  )
+  return [
+    ...new Set(
+      graph.edges
+        .filter(
+          (edge) =>
+            edge.type === "derived_from" &&
+            edge.from.kind === "figure" &&
+            figureIds.has(edge.from.id) &&
+            edge.to.kind === "dataset"
+        )
+        .map((edge) => edge.to.id)
+    )
+  ]
+}
+
+export const runIdsForDatasets = (graph: LabOntology, datasetIds: readonly string[]): string[] => {
+  const wanted = new Set(datasetIds)
+  return [
+    ...new Set(
+      graph.edges
+        .filter(
+          (edge) =>
+            edge.type === "generated_by" &&
+            edge.from.kind === "dataset" &&
+            wanted.has(edge.from.id) &&
+            edge.to.kind === "run"
+        )
+        .map((edge) => edge.to.id)
+    )
+  ]
+}
+
+export const protocolVersionIdsForRuns = (graph: LabOntology, runIds: readonly string[]): string[] => {
+  const wanted = new Set(runIds)
+  return [
+    ...new Set(
+      graph.edges
+        .filter(
+          (edge) =>
+            edge.type === "ran_under" &&
+            edge.from.kind === "run" &&
+            wanted.has(edge.from.id) &&
+            edge.to.kind === "protocol_version"
+        )
+        .map((edge) => edge.to.id)
+    )
+  ]
+}
+
+/** Dataset → Run → ProtocolVersion (methods trace). */
+export const protocolVersionIdsForDatasets = (
+  graph: LabOntology,
+  datasetIds: readonly string[]
+): string[] => protocolVersionIdsForRuns(graph, runIdsForDatasets(graph, datasetIds))
+
+export const datasetDatesForPublication = (graph: LabOntology, publicationId: string): string[] => {
+  const datasetIds = new Set(datasetIdsForPublication(graph, publicationId))
   return graph.entities.datasets.filter((item) => datasetIds.has(item.id)).map((item) => item.date)
 }
 

@@ -22,6 +22,12 @@
     }
   },
   "ontology": {
+    "run": {
+      "id": "run-north-plate-1",
+      "date": "2026-01-15",
+      "operator": "person:operator",
+      "pr2_run_id": "run_01SYNTHETICQCJOIN0000000001"
+    },
     "dataset": {
       "id": "ds-north-plate-1",
       "path": "s3://simulated-prodqc/synthetic-ribogreen/north-plate-1.json",
@@ -36,19 +42,39 @@
       "valid_to": null,
       "pr2_protocol_version_id": "pv_01SYNTHETICWIKIN101V20001"
     },
-    "edge": {
-      "type": "ran_under",
-      "from": { "kind": "dataset", "id": "ds-north-plate-1" },
-      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
-      "provenance": { "kind": "stated" }
-    }
+    "instrument": {
+      "id": "inst-plate-reader-sim",
+      "kind": "fluorescence_plate_reader"
+    },
+    "edges": [
+      {
+        "type": "generated_by",
+        "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+        "to": { "kind": "run", "id": "run-north-plate-1" },
+        "provenance": { "kind": "stated" }
+      },
+      {
+        "type": "ran_under",
+        "from": { "kind": "run", "id": "run-north-plate-1" },
+        "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+        "provenance": { "kind": "stated" }
+      },
+      {
+        "type": "measured_on",
+        "from": { "kind": "run", "id": "run-north-plate-1" },
+        "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
+        "provenance": { "kind": "stated" }
+      }
+    ]
   },
   "join": {
-    "QCMeasurement.run_id": "Run.id",
+    "QCMeasurement.run_id": "Run.id (ontology.run.pr2_run_id)",
     "Run.protocol_version_id": "ontology.protocol_version.pr2_protocol_version_id",
     "QCMeasurement.raw_file_uri": "Dataset.path",
-    "QCMeasurement.measured_at": "Dataset.date",
+    "QCMeasurement.measured_at": "Dataset.date / Run.date",
+    "QCMeasurement.instrument_id": "Instrument.id via Run measured_on",
     "operator.role": "Person.role (no name)",
-    "wiki_pair": "ProtocolVersion.page_id + version from the skill QC envelope"
+    "wiki_pair": "ProtocolVersion.page_id + version from the skill QC envelope",
+    "trace": "Dataset generated_by Run; Run ran_under ProtocolVersion; Run measured_on Instrument"
   }
 }

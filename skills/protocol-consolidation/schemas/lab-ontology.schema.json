@@ -14,6 +14,7 @@
       "required": [
         "assay_types",
         "protocol_versions",
+        "runs",
         "datasets",
         "publications",
         "figures",
@@ -29,6 +30,10 @@
         "protocol_versions": {
           "type": "array",
           "items": { "$ref": "#/$defs/protocolVersion" }
+        },
+        "runs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/run" }
         },
         "datasets": {
           "type": "array",
@@ -109,6 +114,21 @@
         "assay_type": { "type": "string", "minLength": 1 }
       }
     },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "date"],
+      "description": "A lab activity (prov:Activity). ran_under and measured_on hang off Run, not Dataset.",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "operator": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Person id with role operator, not a display name."
+        }
+      }
+    },
     "dataset": {
       "type": "object",
       "additionalProperties": false,
@@ -164,7 +184,7 @@
         "id": { "type": "string", "minLength": 1 },
         "role": {
           "type": "string",
-          "enum": ["assay_owner", "operator", "scientific_advisor", "colleague_reviewer"]
+          "enum": ["assay_owner", "approver", "operator", "scientific_advisor", "colleague_reviewer"]
         }
       }
     },
@@ -187,6 +207,7 @@
           "enum": [
             "assay_type",
             "protocol_version",
+            "run",
             "dataset",
             "publication",
             "figure",
@@ -240,7 +261,17 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["ran_under", "reported_in", "derived_from", "supersedes", "applies_to", "measured_on", "owns"]
+          "enum": [
+            "generated_by",
+            "ran_under",
+            "measured_on",
+            "reported_in",
+            "derived_from",
+            "supersedes",
+            "applies_to",
+            "owns",
+            "approved"
+          ]
         },
         "from": { "$ref": "#/$defs/endpoint" },
         "to": { "$ref": "#/$defs/endpoint" },

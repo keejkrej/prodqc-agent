@@ -30,6 +30,18 @@
         "assay_type": "ribogreen-ee"
       }
     ],
+    "runs": [
+      {
+        "id": "run-paper-ee-1",
+        "date": "2025-09-15",
+        "operator": "person:operator"
+      },
+      {
+        "id": "run-north-plate-1",
+        "date": "2026-01-15",
+        "operator": "person:operator"
+      }
+    ],
     "datasets": [
       {
         "id": "ds-paper-ee-1",
@@ -58,7 +70,8 @@
     ],
     "people": [
       { "id": "person:operator", "role": "operator" },
-      { "id": "person:assay_owner", "role": "assay_owner" }
+      { "id": "person:assay_owner", "role": "assay_owner" },
+      { "id": "person:approver", "role": "approver" }
     ],
     "checks": [
       { "id": "methods-vs-wiki", "assay": "ribogreen-ee" },
@@ -68,32 +81,50 @@
   },
   "edges": [
     {
-      "type": "ran_under",
+      "type": "generated_by",
       "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "to": { "kind": "run", "id": "run-north-plate-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "generated_by",
+      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "to": { "kind": "run", "id": "run-paper-ee-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "ran_under",
+      "from": { "kind": "run", "id": "run-north-plate-1" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     },
     {
       "type": "ran_under",
-      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     },
     {
       "type": "measured_on",
-      "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "from": { "kind": "run", "id": "run-north-plate-1" },
       "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
       "provenance": { "kind": "stated" }
     },
     {
       "type": "measured_on",
-      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
       "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
       "provenance": { "kind": "stated" }
     },
     {
       "type": "owns",
       "from": { "kind": "person", "id": "person:assay_owner" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "approved",
+      "from": { "kind": "person", "id": "person:approver" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     },

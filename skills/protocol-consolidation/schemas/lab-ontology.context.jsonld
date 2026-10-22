@@ -3,7 +3,9 @@
     "prov": "http://www.w3.org/ns/prov#",
     "obi": "http://purl.obolibrary.org/obo/",
     "chebi": "http://purl.obolibrary.org/obo/",
-    "ucum": "https://ucum.org/ucum#",
+    "ucum": "http://unitsofmeasure.org/",
+    "schema": "https://schema.org/",
+    "qudt": "http://qudt.org/vocab/unit/",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "AssayType": {
       "@id": "obi:OBI_0000070",
@@ -15,6 +17,10 @@
     },
     "protocol": {
       "@id": "obi:OBI_0000272",
+      "@type": "@id"
+    },
+    "Run": {
+      "@id": "prov:Activity",
       "@type": "@id"
     },
     "Dataset": {
@@ -29,20 +35,32 @@
       "@id": "prov:hadPlan",
       "@type": "@id"
     },
+    "used": {
+      "@id": "prov:used",
+      "@type": "@id"
+    },
+    "generated_by": {
+      "@id": "prov:wasGeneratedBy",
+      "@type": "@id"
+    },
+    "measured_on": {
+      "@id": "prov:used",
+      "@type": "@id"
+    },
     "supersedes": {
       "@id": "prov:wasRevisionOf",
       "@type": "@id"
     },
-    "confirmed_by": {
-      "@id": "prov:wasAttributedTo",
-      "@type": "@id"
-    },
-    "measured_on": {
-      "@id": "prov:wasGeneratedBy",
-      "@type": "@id"
-    },
     "owns": {
-      "@id": "prov:wasAttributedTo",
+      "@id": "prov:qualifiedAttribution",
+      "@type": "@id"
+    },
+    "approved": {
+      "@id": "prov:qualifiedAttribution",
+      "@type": "@id"
+    },
+    "hadRole": {
+      "@id": "prov:hadRole",
       "@type": "@id"
     },
     "triton_x100": {
@@ -51,12 +69,30 @@
     },
     "ribogreen_chebi_todo": "TODO: no ChEBI term found for Quant-iT RiboGreen (proprietary dye; NCI Thesaurus C158433 is not ChEBI). Do not invent an ID.",
     "units": {
-      "ug_per_mL": { "@id": "ucum:ug/mL" },
-      "percent": { "@id": "ucum:%" },
-      "min": { "@id": "ucum:min" },
-      "Cel": { "@id": "ucum:Cel" },
-      "nm": { "@id": "ucum:nm" },
-      "uL": { "@id": "ucum:uL" }
+      "ug_per_mL": {
+        "@id": "qudt:MicroGM-PER-MilliL",
+        "schema:unitCode": "ug/mL"
+      },
+      "percent": {
+        "@id": "qudt:PERCENT",
+        "schema:unitCode": "%"
+      },
+      "min": {
+        "@id": "qudt:MIN",
+        "schema:unitCode": "min"
+      },
+      "Cel": {
+        "@id": "qudt:DEG_C",
+        "schema:unitCode": "Cel"
+      },
+      "nm": {
+        "@id": "qudt:NanoM",
+        "schema:unitCode": "nm"
+      },
+      "uL": {
+        "@id": "qudt:MicroL",
+        "schema:unitCode": "uL"
+      }
     }
   }
 }

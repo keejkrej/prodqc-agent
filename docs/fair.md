@@ -1,6 +1,6 @@
 # FAIR-ready export
 
-This skill produces a **FAIR-ready export**, not a FAIR dataset. Do not call the crate or the ontology “FAIR” until each released protocol version has a DOI and a license.
+This skill produces a **FAIR-ready export**. Do not call the crate, the ontology, or a released protocol **FAIR-compliant**. Synthetic data only.
 
 JSON-LD context: `skills/protocol-consolidation/schemas/lab-ontology.context.jsonld`. RO-Crate 1.1 command:
 
@@ -11,7 +11,7 @@ npm run variant-table -- ro-crate \
   --out /tmp/fair-ready-crate
 ```
 
-The crate bundles one `ProtocolVersion` with datasets that `ran_under` it and publications reached via `Figure derived_from Dataset` / `reported_in`. Validation is the in-repo RO-Crate 1.1 structural checks (`validateRoCrate11`). `rocrate-validator` was not available in this environment; that function is the equivalent.
+The crate bundles one `ProtocolVersion` with **Runs** that `ran_under` it, Datasets `generated_by` those Runs, and publications reached via `Figure derived_from Dataset` / `reported_in`. Validation is the in-repo RO-Crate 1.1 structural checks (`validateRoCrate11`). `rocrate-validator` was not available in this environment; that function is the equivalent.
 
 Recommended licensing (not yet attached to a released protocol version):
 
@@ -22,23 +22,28 @@ Recommended licensing (not yet attached to a released protocol version):
 
 | | Met now (FAIR-ready export) | Needed before calling it FAIR |
 | --- | --- | --- |
-| **F**indable | Local identifiers (`page_id` + `version`, dataset path, synthetic DOI on the example publication). JSON-LD `@id`s in the crate. | A **DOI per released protocol version** (Zenodo or protocols.io). Indexing outside the lab. |
+| **F**indable | Local identifiers (`page_id` + `version`, run id, dataset path, synthetic DOI on the example publication). JSON-LD `@id`s in the crate. | A **DOI per released protocol version** (Zenodo or protocols.io). Indexing outside the lab. |
 | **A**ccessible | Crate is a directory of JSON + README that can be copied. Protocol pages themselves stay in the lab. | A public landing page for each DOI. Authentication story for any remaining lab-private files. |
-| **I**nteroperable | W3C PROV-O (`ProtocolVersion` → `prov:Plan`, `Dataset` → `prov:Entity`, `ran_under` → `prov:qualifiedAssociation` / `hadPlan`, `supersedes` → `prov:wasRevisionOf`, confirmed-by → `prov:wasAttributedTo`). OBI protocol `OBI:0000272`, assay `OBI:0000070`. Triton X-100 `CHEBI:9750`. Units as UCUM (`ug/mL`, `%`, `min`, `Cel`, `nm`, `uL`). RO-Crate 1.1 `@context`. | RiboGreen: **no ChEBI term** (TODO; proprietary Quant-iT dye; do not invent an ID). Broader term mappings as other assays appear. |
+| **I**nteroperable | W3C PROV-O (`Run` → `prov:Activity`, `ProtocolVersion` → `prov:Plan`, `Dataset` → `prov:Entity`, Dataset `generated_by` Run, Run `ran_under` Plan via `qualifiedAssociation`/`hadPlan`, Run `measured_on` Instrument via `prov:used`, `supersedes` → `wasRevisionOf`). Owner vs approver: `prov:qualifiedAttribution` + `prov:hadRole` (`assay_owner` / `approver`). OBI protocol `OBI:0000272`, assay `OBI:0000070`. Triton X-100 `CHEBI:9750`. Units: UCUM codes as `schema:unitCode` under namespace `http://unitsofmeasure.org/` (HEAD 200) plus QUDT IRIs. RO-Crate 1.1 `@context`. | RiboGreen: **no ChEBI term** (TODO; proprietary Quant-iT dye; do not invent an ID). Broader term mappings as other assays appear. |
 | **R**eusable | Structured variant fields, provenance on every edge, CC-BY-4.0 marked on the synthetic crate as the intended metadata licence. | An actual **license** chosen and published on the DOI record. Owner sign-off (`status: proposed` until then). |
 
 ## PROV-O / OBI map
 
 | Ontology | Term |
 | --- | --- |
+| Run | `prov:Activity` |
 | ProtocolVersion | `prov:Plan` and OBI protocol `OBI:0000272` |
 | AssayType | OBI assay `OBI:0000070` |
 | Dataset | `prov:Entity` |
-| `ran_under` | `prov:qualifiedAssociation` with `prov:hadPlan` |
+| `generated_by` | Dataset `prov:wasGeneratedBy` Run |
+| `ran_under` | Run `prov:used` ProtocolVersion, and Run `prov:qualifiedAssociation` / `prov:hadPlan` |
+| `measured_on` | Run `prov:used` Instrument |
 | `supersedes` | `prov:wasRevisionOf` |
-| provenance `confirmed` / `owns` | `prov:wasAttributedTo` |
+| `owns` | `prov:qualifiedAttribution` with `prov:hadRole` `assay_owner` |
+| `approved` | `prov:qualifiedAttribution` with `prov:hadRole` `approver` |
 | Triton X-100 | `CHEBI:9750` |
 | RiboGreen | TODO — no ChEBI ID |
+| Units | UCUM `http://unitsofmeasure.org/` + `schema:unitCode`; QUDT IRIs for the same codes |
 
 Optional instance fields (used by the JSON-LD export; omit or null when unknown; never invent):
 

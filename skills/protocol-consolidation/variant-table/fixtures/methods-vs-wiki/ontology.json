@@ -1,5 +1,5 @@
 {
-  "disclaimer": "SYNTHETIC methods-vs-wiki graph. Dataset date 2025-09-15 (v2 in force) is preferred over submission 2025-11-01.",
+  "disclaimer": "SYNTHETIC methods-vs-wiki graph. Dataset date 2025-09-15 (v2 in force) is preferred over submission 2025-11-01. Trace is Dataset → Run → ProtocolVersion.",
   "entities": {
     "assay_types": [{ "id": "ribogreen-ee" }],
     "protocol_versions": [
@@ -18,6 +18,13 @@
         "valid_from": "2025-06-01",
         "valid_to": null,
         "assay_type": "ribogreen-ee"
+      }
+    ],
+    "runs": [
+      {
+        "id": "run-paper-ee-1",
+        "date": "2025-09-15",
+        "operator": "person:operator"
       }
     ],
     "datasets": [
@@ -40,20 +47,27 @@
     "instruments": [{ "id": "inst-plate-reader-sim", "kind": "fluorescence_plate_reader" }],
     "people": [
       { "id": "person:operator", "role": "operator" },
-      { "id": "person:assay_owner", "role": "assay_owner" }
+      { "id": "person:assay_owner", "role": "assay_owner" },
+      { "id": "person:approver", "role": "approver" }
     ],
     "checks": [{ "id": "methods-vs-wiki", "assay": "ribogreen-ee" }]
   },
   "edges": [
     {
-      "type": "ran_under",
+      "type": "generated_by",
       "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "to": { "kind": "run", "id": "run-paper-ee-1" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "ran_under",
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     },
     {
       "type": "measured_on",
-      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "from": { "kind": "run", "id": "run-paper-ee-1" },
       "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
       "provenance": { "kind": "stated" }
     },
@@ -72,6 +86,12 @@
     {
       "type": "owns",
       "from": { "kind": "person", "id": "person:assay_owner" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "approved",
+      "from": { "kind": "person", "id": "person:approver" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     }

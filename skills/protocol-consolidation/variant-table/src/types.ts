@@ -151,6 +151,11 @@ export interface LabOntology {
       readonly valid_to: string | null
       readonly assay_type: string
     }>
+    readonly runs?: ReadonlyArray<{
+      readonly id: string
+      readonly date: string
+      readonly operator?: string
+    }>
     readonly instruments?: ReadonlyArray<{ readonly id: string; readonly kind: string }>
     readonly people?: ReadonlyArray<{ readonly id: string; readonly role: string }>
     readonly figures?: ReadonlyArray<{ readonly id: string; readonly label?: string }>

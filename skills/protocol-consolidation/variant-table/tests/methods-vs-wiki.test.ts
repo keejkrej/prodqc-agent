@@ -8,6 +8,8 @@ import { compareTables } from "../src/compare.ts"
 import { extractFromPath } from "../src/extract.ts"
 import {
   datasetDatesForPublication,
+  datasetIdsForPublication,
+  protocolVersionIdsForDatasets,
   selectProtocolForMethods
 } from "../src/select-version.ts"
 import type { LabOntology, MethodsVsWikiReport, ProtocolVersionInterval } from "../src/types.ts"
@@ -36,6 +38,8 @@ describe("methods vs wiki", () => {
     assert.equal(selected.date_basis, "dataset")
     assert.equal(selected.version.id, "pv-N101-v2")
     assert.equal(selected.as_of, "2025-09-15")
+    const datasetIds = datasetIdsForPublication(graph, "pub-synthetic-1")
+    assert.deepEqual(protocolVersionIdsForDatasets(graph, datasetIds), ["pv-N101-v2"])
   })
 
   it("uses a dataset date even when submission would pick a later protocol version", () => {

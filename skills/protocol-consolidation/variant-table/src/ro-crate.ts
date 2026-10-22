@@ -20,16 +20,29 @@ export interface RoCrateExport {
 const loadContext = (): Record<string, unknown> =>
   JSON.parse(readFileSync(CONTEXT_PATH, "utf8")) as Record<string, unknown>
 
-export const datasetsForProtocol = (graph: LabOntology, protocolId: string): string[] =>
+export const runIdsForProtocol = (graph: LabOntology, protocolId: string): string[] =>
   graph.edges
     .filter(
       (edge) =>
         edge.type === "ran_under" &&
-        edge.from.kind === "dataset" &&
+        edge.from.kind === "run" &&
         edge.to.kind === "protocol_version" &&
         edge.to.id === protocolId
     )
     .map((edge) => edge.from.id)
+
+export const datasetsForProtocol = (graph: LabOntology, protocolId: string): string[] => {
+  const runIds = new Set(runIdsForProtocol(graph, protocolId))
+  return graph.edges
+    .filter(
+      (edge) =>
+        edge.type === "generated_by" &&
+        edge.from.kind === "dataset" &&
+        edge.to.kind === "run" &&
+        runIds.has(edge.to.id)
+    )
+    .map((edge) => edge.from.id)
+}
 
 export const publicationsForDatasets = (graph: LabOntology, datasetIds: readonly string[]): string[] => {
   const wanted = new Set(datasetIds)
@@ -66,38 +79,53 @@ const chebiIri = (chebiId: string): string =>
 const reagentNodeId = (reagent: { readonly id: string; readonly chebi_id?: string | null }): string =>
   reagent.chebi_id ? chebiIri(reagent.chebi_id) : entityId("reagent", reagent.id)
 
-const ownsAgents = (graph: LabOntology, protocolId: string): { "@id": string }[] =>
+const peopleOnEdge = (
+  graph: LabOntology,
+  protocolId: string,
+  type: "owns" | "approved"
+): { readonly id: string; readonly role: string }[] =>
   graph.edges
     .filter(
       (edge) =>
-        edge.type === "owns" &&
+        edge.type === type &&
         edge.from.kind === "person" &&
         edge.to.kind === "protocol_version" &&
         edge.to.id === protocolId
     )
-    .map((edge) => ({ "@id": entityId("person", edge.from.id) }))
+    .map((edge) => ({
+      id: edge.from.id,
+      role: type === "owns" ? "assay_owner" : "approver"
+    }))
 
-const measuredOn = (graph: LabOntology, datasetId: string): { "@id": string }[] =>
+const qualifiedAttributions = (graph: LabOntology, protocolId: string): unknown[] =>
+  [
+    ...peopleOnEdge(graph, protocolId, "owns"),
+    ...peopleOnEdge(graph, protocolId, "approved")
+  ].map((person) => ({
+    "@type": "prov:Attribution",
+    "prov:agent": { "@id": entityId("person", person.id) },
+    "prov:hadRole": person.role
+  }))
+
+const runIdForDataset = (graph: LabOntology, datasetId: string): string | undefined =>
+  graph.edges.find(
+    (edge) =>
+      edge.type === "generated_by" &&
+      edge.from.kind === "dataset" &&
+      edge.from.id === datasetId &&
+      edge.to.kind === "run"
+  )?.to.id
+
+const instrumentsUsedByRun = (graph: LabOntology, runId: string): { "@id": string }[] =>
   graph.edges
     .filter(
       (edge) =>
         edge.type === "measured_on" &&
-        edge.from.kind === "dataset" &&
-        edge.from.id === datasetId &&
+        edge.from.kind === "run" &&
+        edge.from.id === runId &&
         edge.to.kind === "instrument"
     )
     .map((edge) => ({ "@id": entityId("instrument", edge.to.id) }))
-
-const confirmedBy = (graph: LabOntology, protocolId: string): { "@id": string }[] =>
-  graph.edges
-    .filter(
-      (edge) =>
-        edge.to.kind === "protocol_version" &&
-        edge.to.id === protocolId &&
-        edge.provenance.kind === "confirmed" &&
-        typeof edge.provenance.who === "string"
-    )
-    .map((edge) => ({ "@id": entityId("person", edge.provenance.who as string) }))
 
 export const buildRoCrate = (params: {
   readonly graph: LabOntology
@@ -108,14 +136,22 @@ export const buildRoCrate = (params: {
     throw new Error(`ro-crate: unknown protocol version ${params.protocolId}`)
   }
   const datasetIds = datasetsForProtocol(params.graph, params.protocolId)
+  const runIds = runIdsForProtocol(params.graph, params.protocolId)
   const publicationIds = publicationsForDatasets(params.graph, datasetIds)
   const datasets = params.graph.entities.datasets.filter((item) => datasetIds.includes(item.id))
+  const runs = (params.graph.entities.runs ?? []).filter((item) => runIds.includes(item.id))
   const publications = params.graph.entities.publications.filter((item) => publicationIds.includes(item.id))
   const assay = params.graph.entities.assay_types?.find((item) => item.id === protocol.assay_type)
   const reagents = params.graph.entities.reagents ?? []
+  const people = params.graph.entities.people ?? []
   const ontologyContext = loadContext()
+  const personIds = new Set([
+    ...peopleOnEdge(params.graph, protocol.id, "owns").map((item) => item.id),
+    ...peopleOnEdge(params.graph, protocol.id, "approved").map((item) => item.id)
+  ])
   const parts = [
     { "@id": entityId("protocol_version", protocol.id) },
+    ...runs.map((item) => ({ "@id": entityId("run", item.id) })),
     ...datasets.map((item) => ({ "@id": entityId("dataset", item.id) })),
     ...publications.map((item) => ({ "@id": entityId("publication", item.id) })),
     ...(assay ? [{ "@id": entityId("assay_type", assay.id) }] : []),
@@ -156,20 +192,40 @@ export const buildRoCrate = (params: {
             edge.to.kind === "protocol_version"
         )
         .map((edge) => ({ "@id": entityId("protocol_version", edge.to.id) })),
-      "prov:wasAttributedTo": [...ownsAgents(params.graph, protocol.id), ...confirmedBy(params.graph, protocol.id)]
+      "prov:qualifiedAttribution": qualifiedAttributions(params.graph, protocol.id)
     },
-    ...datasets.map((item) => ({
-      "@id": entityId("dataset", item.id),
-      "@type": "prov:Entity",
+    ...runs.map((item) => ({
+      "@id": entityId("run", item.id),
+      "@type": "prov:Activity",
       "name": item.id,
-      "path": item.path,
       "date": item.date,
+      "prov:used": [
+        { "@id": entityId("protocol_version", protocol.id) },
+        ...instrumentsUsedByRun(params.graph, item.id)
+      ],
       "prov:qualifiedAssociation": {
         "@type": "prov:Association",
         "prov:hadPlan": { "@id": entityId("protocol_version", protocol.id) }
-      },
-      "prov:wasGeneratedBy": measuredOn(params.graph, item.id)
+      }
     })),
+    ...datasets.map((item) => {
+      const runId = runIdForDataset(params.graph, item.id)
+      return {
+        "@id": entityId("dataset", item.id),
+        "@type": "prov:Entity",
+        "name": item.id,
+        "path": item.path,
+        "date": item.date,
+        ...(runId ? { "prov:wasGeneratedBy": { "@id": entityId("run", runId) } } : {})
+      }
+    }),
+    ...people
+      .filter((item) => personIds.has(item.id))
+      .map((item) => ({
+        "@id": entityId("person", item.id),
+        "@type": "prov:Agent",
+        "role": item.role
+      })),
     ...publications.map((item) => ({
       "@id": entityId("publication", item.id),
       "@type": "ScholarlyArticle",
