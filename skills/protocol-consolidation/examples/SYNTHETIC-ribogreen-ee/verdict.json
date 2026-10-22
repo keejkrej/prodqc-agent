@@ -1,5 +1,5 @@
 {
-  "check_id": "inverted-ee-formula",
+  "check_id": "ee-formula-error",
   "assay": "ribogreen-ee",
   "verdict": "accept",
   "lab_novelty": "new",

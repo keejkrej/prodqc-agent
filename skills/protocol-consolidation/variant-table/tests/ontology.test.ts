@@ -32,6 +32,12 @@ interface Graph {
       readonly valid_from: string
       readonly valid_to: string | null
     }>
+    readonly assay_types?: ReadonlyArray<{ readonly id: string; readonly obi_id?: string }>
+    readonly reagents?: ReadonlyArray<{
+      readonly id: string
+      readonly label: string
+      readonly chebi_id?: string | null
+    }>
   }
   readonly edges: ReadonlyArray<{
     readonly type: string
@@ -50,7 +56,15 @@ describe("synthetic lab ontology", () => {
       assert.ok(person.role.length > 0)
     }
     const types = new Set(graph.edges.map((edge) => edge.type))
-    for (const required of ["ran_under", "reported_in", "derived_from", "supersedes", "applies_to"]) {
+    for (const required of [
+      "ran_under",
+      "reported_in",
+      "derived_from",
+      "supersedes",
+      "applies_to",
+      "measured_on",
+      "owns"
+    ]) {
       assert.equal(types.has(required), true, `missing edge type ${required}`)
     }
     for (const edge of graph.edges) {
@@ -101,8 +115,23 @@ describe("synthetic lab ontology", () => {
     assert.equal(mapping.ontology.edge.type, "ran_under")
     assert.equal(mapping.pr2.operator.role, "operator")
     assert.equal("name" in mapping.pr2.operator, false)
-    const graphDataset = graph.entities.datasets[0]
+    const graphDataset = graph.entities.datasets.find((item) => item.id === "ds-north-plate-1")
     assert.equal(graphDataset?.path, mapping.ontology.dataset.path)
     assert.equal(graphDataset?.owner, mapping.pr2.operator.id)
+    const measured = graph.edges.find(
+      (item) => item.type === "measured_on" && item.from.id === "ds-north-plate-1"
+    )
+    assert.equal(measured?.to.kind, "instrument")
+    const owns = graph.edges.find((item) => item.type === "owns")
+    assert.equal(owns?.from.kind, "person")
+    assert.equal(owns?.to.kind, "protocol_version")
+    const owner = graph.entities.people.find((item) => item.id === owns?.from.id)
+    assert.equal(owner?.role, "assay_owner")
+    const assay = graph.entities.assay_types?.find((item) => item.id === "ribogreen-ee")
+    assert.equal(assay?.obi_id, "OBI:0000070")
+    const triton = graph.entities.reagents?.find((item) => item.id === "triton-x100")
+    const dye = graph.entities.reagents?.find((item) => item.id === "ribogreen")
+    assert.equal(triton?.chebi_id, "CHEBI:9750")
+    assert.equal(dye?.chebi_id, null)
   })
 })

@@ -35,7 +35,7 @@ One heading per `D-*` id: check_id, excerpts, owner question, `status` (`open` |
 
 ## qc-results.json / signed-off.json
 
-Each object **must** include `protocol_page_id`, `protocol_version`, and `variant` (see [qc-result.schema.json](qc-result.schema.json), [signed-off-record.schema.json](signed-off-record.schema.json)). RiboGreen `variant`: `dye_dilution`, `triton_standard_curve`, `curve_well_volume_uL`, `sample_well_volume_uL`, `incubation_time_min`, `incubation_temperature_C`, `ee_formula`, `excitation_nm`, `emission_nm`, `notes`. These files never leave the lab.
+Each object **must** include `protocol_page_id`, `protocol_version`, and `variant` (see [qc-result.schema.json](qc-result.schema.json), [signed-off-record.schema.json](signed-off-record.schema.json)). RiboGreen `variant`: `dye_dilution`, `triton_standard_curve`, `triton_final_conc_pct`, `curve_well_volume_uL`, `sample_well_volume_uL`, `sample_dilution_ug_per_mL`, `lysis_time_min`, `lysis_temperature_C`, `dye_incubation_time_min`, `dye_incubation_light`, `blank_subtraction.{triton_blank, water_blank}`, `ee_formula`, `excitation_nm`, `emission_nm`, `notes`. These files never leave the lab.
 
 ## variant-table.json
 

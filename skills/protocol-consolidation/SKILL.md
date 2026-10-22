@@ -7,7 +7,7 @@ description: >-
   drafting a merged protocol that never invents unread values, listing owner
   decisions, proposing a new generic check after a decision, extracting a
   structured variant field table, comparing two labs' tables, or diffing a
-  paper's methods against the protocol version current before submission.
+  paper's methods against the protocol version current on linked dataset dates.
   Requires mcp-atlassian in READ_ONLY_MODE, the PR 4 Confluence extras
   (get_page_links, build_space_graph, get_history), and the protocol drafting
   CLI. Never write to the wiki. Never commit real lab protocol text.
@@ -30,7 +30,7 @@ The owner named one assay family and the wiki spaces to stay inside. Claude Code
 | Search, get page, children, tree, attachments | [mcp-atlassian](https://github.com/sooperset/mcp-atlassian) with `READ_ONLY_MODE=true` |
 | Page graph, parsed outgoing links, version list | PR 4 extras: `build_space_graph`, `get_page_links`, `get_history` |
 | Sourced drafts, comparison, `--summary-only` counts | Protocol drafting CLI (`npm run draft:protocol`) |
-| Extract / compare fixed variant fields (no protocol text) | `npm run variant-table -- extract\|compare\|methods-vs-wiki` |
+| Extract / compare / check / RO-Crate export (no protocol text) | `npm run variant-table -- extract\|compare\|methods-vs-wiki\|check\|ro-crate` |
 
 If a tool would POST/PUT/DELETE to Confluence, stop.
 
@@ -47,7 +47,7 @@ Worked **synthetic** example (RiboGreen encapsulation efficiency): [examples/SYN
 
 ## Cross-lab comparison mode
 
-Each lab runs a **local** extract of the assay’s fixed variant fields, each with a `{file,line}` source pointer. Export **only** that field table. `compare` diffs two labs into a mismatch report. `methods-vs-wiki` diffs a paper’s methods extract against the protocol version current before the submission date. [references/compare-mode.md](references/compare-mode.md). Lab graph: [docs/lab-ontology.md](../../docs/lab-ontology.md).
+Each lab runs a **local** extract of the assay’s fixed variant fields, each with a `{file,line}` source pointer. Export **only** that field table. `compare` diffs two labs into a mismatch report. `methods-vs-wiki` diffs a paper’s methods extract against the protocol version current on **linked dataset dates** (submission date only when there are no datasets). [references/compare-mode.md](references/compare-mode.md). Lab graph: [docs/lab-ontology.md](../../docs/lab-ontology.md). FAIR-ready export: [docs/fair.md](../../docs/fair.md).
 
 Synthetic labs: [variant-table/fixtures/SYNTHETIC-lab-north](variant-table/fixtures/SYNTHETIC-lab-north/) and [SYNTHETIC-lab-south](variant-table/fixtures/SYNTHETIC-lab-south/).
 
@@ -77,7 +77,7 @@ Pitch slides use `--summary-only` counts only. Cross-lab loop and JSON schemas: 
 - Institution-approved or local model only; otherwise skip infer and keep values unfilled.
 - Keep “until clear” / observation-gated branches; do not flatten them.
 - Units as UCUM when present in source.
-- Every QC result and signed-off record must include `protocol_page_id`, `protocol_version`, and a structured `variant` (RiboGreen: `dye_dilution`, `triton_standard_curve`, `curve_well_volume_uL`, `sample_well_volume_uL`, `incubation_time_min`, `incubation_temperature_C`, `ee_formula`, `excitation_nm`, `emission_nm`). Free text only in `variant.notes`.
+- Every QC result and signed-off record must include `protocol_page_id`, `protocol_version`, and a structured `variant` (RiboGreen: `dye_dilution`, `triton_standard_curve`, `triton_final_conc_pct`, `curve_well_volume_uL`, `sample_well_volume_uL`, `sample_dilution_ug_per_mL`, `lysis_time_min`, `lysis_temperature_C`, `dye_incubation_time_min`, `dye_incubation_light`, `blank_subtraction.{triton_blank, water_blank}`, `ee_formula`, `excitation_nm`, `emission_nm`). Free text only in `variant.notes`. Optional `reagents.*.chebi_id` (Triton X-100 `CHEBI:9750`; RiboGreen `null` — no ChEBI term).
 - Cross-lab export is the field table only — values plus `{file,line}`. No excerpts, notes, or protocol text.
 - Check library changes are diffs + human approval, never silent edits. A new lab adopts a proposal only when its owner signs off.
 - Generic issue classes belong in `checks/`. Lab-specific numbers and page titles do not.

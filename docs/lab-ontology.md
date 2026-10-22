@@ -8,7 +8,8 @@ This graph stays in the lab. Share the same objects the cross-lab loop already a
 
 | Entity | Required fields | Notes |
 | --- | --- | --- |
-| `AssayType` | `id` | e.g. `ribogreen-ee` |
+| `AssayType` | `id` | e.g. `ribogreen-ee`. Optional `obi_id` (`OBI:0000070` for this assay). |
+| `Reagent` | `id`, `label` | Optional `chebi_id` (`CHEBI:9750` for Triton X-100). Null/omit when no term exists (RiboGreen). Never invent. |
 | `ProtocolVersion` | `page_id`, `version`, `valid_from`, `valid_to` | Wiki content id + `get_history` number. `valid_to` is exclusive; `null` means still current. |
 | `Dataset` | `path`, `date`, `owner` | Plate export / raw file. `owner` is a Person id (role), not a name. |
 | `Publication` | `doi`, `figures` | Figure ids listed on the paper. Optional `submitted` date. |
@@ -36,6 +37,8 @@ Every edge carries `provenance`:
 | `derived_from` | Figure → Dataset | `stated` if the caption cites the file; otherwise `inferred` from dates |
 | `supersedes` | ProtocolVersion → ProtocolVersion | `inferred` from `get_history` (v3 supersedes v2) unless an owner confirms |
 | `applies_to` | Check → AssayType | `stated` in the checks file; `confirmed` when an owner accepts the check |
+| `measured_on` | Dataset → Instrument | `stated` on the QC/instrument record |
+| `owns` | Person → ProtocolVersion | Person is **role only** (`assay_owner`). `stated` from the wiki owner role; `confirmed` after sign-off |
 
 Do not invent an edge. If the join is missing, leave it off and open a decision.
 
@@ -85,9 +88,11 @@ Worked synthetic objects: [pr2-qc-mapping.json](../skills/protocol-consolidation
 
 ## Methods vs wiki
 
-A paper is not a protocol page. Extract the assay’s **fixed variant fields** from the methods section the same way a lab extracts its wiki (`npm run variant-table -- methods-vs-wiki`), then diff that table against the `ProtocolVersion` that was **current immediately before the submission date** (`valid_from ≤ submitted < valid_to`).
+A paper is not a protocol page. Extract the assay’s **fixed variant fields** from the methods section the same way a lab extracts its wiki (`npm run variant-table -- methods-vs-wiki`), then diff that table against the `ProtocolVersion` that was current on the **dates of linked datasets** (figures `derived_from` those datasets, `reported_in` the publication). Use the submission date only when there are no linked datasets.
 
 - Do not send methods prose across labs. The export is the field table (values + `{file,line}`), same as cross-lab compare.
 - Mismatches (formula, incubation, dilution, …) are check hits, not silent edits.
 - Check id: `methods-vs-wiki` in `checks/ribogreen-ee.md`.
-- Synthetic fixtures: `skills/protocol-consolidation/variant-table/fixtures/methods-vs-wiki/` (paper submitted `2025-11-01` vs wiki v2 current from `2025-06-01`).
+- Synthetic fixtures: `skills/protocol-consolidation/variant-table/fixtures/methods-vs-wiki/` (linked dataset `2025-09-15` selects wiki v2; no-dataset fallback uses submission `2025-11-01`).
+
+JSON-LD / RO-Crate: [fair.md](fair.md) (**FAIR-ready export**, not a FAIR claim).

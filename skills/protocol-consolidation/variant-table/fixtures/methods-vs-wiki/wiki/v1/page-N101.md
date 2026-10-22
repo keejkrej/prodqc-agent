@@ -8,7 +8,15 @@ Working dye dilution: 1:100.
 
 Load 200 µL per well.
 
-Incubate 10 min at 22 °C.
+Lyse 15 min at 22 °C.
+
+Dye incubation 10 min in the light.
+
+Triton final concentration: 0.1 %.
+
+Sample dilution: 2 ug/mL.
+
+Triton blank: no. Water blank: yes.
 
 Encapsulation efficiency is reported as total/free.
 

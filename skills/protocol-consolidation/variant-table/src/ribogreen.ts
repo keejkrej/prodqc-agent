@@ -1,4 +1,5 @@
 import type {
+  DyeIncubationLight,
   EeFormula,
   FieldCell,
   RibogreenFieldName,
@@ -10,6 +11,7 @@ import type {
 import { RIBOGREEN_FIELD_NAMES } from "./types.ts"
 
 const VOLUME = /(?:µ|μ|u)L/i
+const UG_ML = /(?:µg|ug)\s*\/\s*mL/i
 
 const firstDefined = <T>(...cells: Array<FieldCell<T> | undefined>): FieldCell<T> | undefined => {
   for (const cell of cells) {
@@ -63,6 +65,13 @@ const collect = <T>(
   return hits
 }
 
+const asBool = (token: string): boolean | undefined => {
+  const t = token.toLowerCase()
+  if (t === "yes" || t === "true" || t === "on") return true
+  if (t === "no" || t === "false" || t === "off") return false
+  return undefined
+}
+
 const dyeDilution = (text: string): string | undefined => {
   const match = text.match(/dye\s+dilution[:\s]+(\d+:\d+)/i)
   return match?.[1]
@@ -81,6 +90,13 @@ const tritonStandardCurve = (text: string): boolean | undefined => {
   if (dual && !only) return true
   if (only) return false
   return undefined
+}
+
+const tritonFinalConc = (text: string): number | undefined => {
+  const match =
+    text.match(/triton(?:\s+x-?100)?(?:\s+final)?(?:\s+concentration)?[:\s]+(\d+(?:\.\d+)?)\s*%/i) ??
+    text.match(/(\d+(?:\.\d+)?)\s*%\s+triton/i)
+  return match?.[1] ? Number(match[1]) : undefined
 }
 
 const curveVolume = (text: string): number | undefined => {
@@ -102,16 +118,56 @@ const perWellVolume = (text: string): number | undefined => {
   return match?.[1] ? Number(match[1]) : undefined
 }
 
-const incubationTime = (text: string): number | undefined => {
-  if (!/incubate|incubation/i.test(text)) return undefined
+const sampleDilution = (text: string): number | undefined => {
+  const match =
+    text.match(new RegExp(`sample dilution[:\\s]+(\\d+(?:\\.\\d+)?)\\s*${UG_ML.source}`, "i")) ??
+    text.match(new RegExp(`diluted to[:\\s]+(\\d+(?:\\.\\d+)?)\\s*${UG_ML.source}`, "i"))
+  return match?.[1] ? Number(match[1]) : undefined
+}
+
+const inWellRna = (text: string): number | undefined => {
+  const match = text.match(new RegExp(`in[- ]well(?:\\s+RNA)?[:\\s]+(\\d+(?:\\.\\d+)?)\\s*${UG_ML.source}`, "i"))
+  return match?.[1] ? Number(match[1]) : undefined
+}
+
+const lysisTime = (text: string): number | undefined => {
+  if (!/\blys(?:e|is|ed)\b/i.test(text)) return undefined
   const match = text.match(/(\d+(?:\.\d+)?)\s*(?:min|minutes?)\b/i)
   return match?.[1] ? Number(match[1]) : undefined
 }
 
-const incubationTemperature = (text: string): number | undefined => {
-  if (!/incubate|incubation/i.test(text)) return undefined
+const lysisTemperature = (text: string): number | undefined => {
+  if (!/\blys(?:e|is|ed)\b/i.test(text)) return undefined
   const match = text.match(/(\d+(?:\.\d+)?)\s*(?:°\s*)?C\b/i)
   return match?.[1] ? Number(match[1]) : undefined
+}
+
+const dyeIncubationTime = (text: string): number | undefined => {
+  if (!/dye incubat/i.test(text)) return undefined
+  const match = text.match(/(\d+(?:\.\d+)?)\s*(?:min|minutes?)\b/i)
+  return match?.[1] ? Number(match[1]) : undefined
+}
+
+const dyeIncubationLight = (text: string): DyeIncubationLight | undefined => {
+  if (/in the dark|protected from light|light[- ]protected/i.test(text)) return "dark"
+  if (/dye incubat/i.test(text) && /in the light|under (?:ambient )?light/i.test(text)) return "light"
+  return undefined
+}
+
+const tritonBlank = (text: string): boolean | undefined => {
+  const labelled = text.match(/triton blank[:\s]+(yes|no|true|false|on|off)/i)
+  if (labelled?.[1]) return asBool(labelled[1])
+  if (/no triton blank/i.test(text)) return false
+  if (/subtract(?:s|ed|ion of)?\s+triton blank/i.test(text)) return true
+  return undefined
+}
+
+const waterBlank = (text: string): boolean | undefined => {
+  const labelled = text.match(/water blank[:\s]+(yes|no|true|false|on|off)/i)
+  if (labelled?.[1]) return asBool(labelled[1])
+  if (/no water blank/i.test(text)) return false
+  if (/subtract(?:s|ed|ion of)?\s+water blank/i.test(text)) return true
+  return undefined
 }
 
 const eeFormula = (text: string): EeFormula | undefined => {
@@ -155,10 +211,17 @@ export const extractRibogreen = (params: {
   const fields: RibogreenFields = {
     dye_dilution: uniqueOrOmit(collect(lines, dyeDilution)),
     triton_standard_curve: uniqueOrOmit(collect(lines, tritonStandardCurve)),
+    triton_final_conc_pct: uniqueOrOmit(collect(lines, tritonFinalConc)),
     curve_well_volume_uL: firstDefined(uniqueOrOmit(collect(lines, curveVolume)), perWell),
     sample_well_volume_uL: firstDefined(uniqueOrOmit(collect(lines, sampleVolume)), perWell),
-    incubation_time_min: uniqueOrOmit(collect(lines, incubationTime)),
-    incubation_temperature_C: uniqueOrOmit(collect(lines, incubationTemperature)),
+    sample_dilution_ug_per_mL: uniqueOrOmit(collect(lines, sampleDilution)),
+    in_well_rna_ug_per_mL: uniqueOrOmit(collect(lines, inWellRna)),
+    lysis_time_min: uniqueOrOmit(collect(lines, lysisTime)),
+    lysis_temperature_C: uniqueOrOmit(collect(lines, lysisTemperature)),
+    dye_incubation_time_min: uniqueOrOmit(collect(lines, dyeIncubationTime)),
+    dye_incubation_light: uniqueOrOmit(collect(lines, dyeIncubationLight)),
+    triton_blank: uniqueOrOmit(collect(lines, tritonBlank)),
+    water_blank: uniqueOrOmit(collect(lines, waterBlank)),
     ee_formula: uniqueOrOmit(collect(lines, eeFormula)),
     excitation_nm: uniqueOrOmit(collect(lines, excitation)),
     emission_nm: uniqueOrOmit(collect(lines, emission))

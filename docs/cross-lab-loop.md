@@ -59,23 +59,30 @@ Every QC result and every signed-off record **in the lab** must carry:
 
 Free text is allowed **only** on `variant.notes`. Strip `notes` (and page id) before any outcome summary is shared.
 
-RiboGreen EE variant fields:
+RiboGreen EE variant fields (machine schema: `schemas/variant-ribogreen-ee.schema.json`):
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `assay_type` | `"ribogreen-ee"` | Discriminator |
 | `dye_dilution` | string ratio (`1:100`) | Not a paragraph |
 | `triton_standard_curve` | boolean | Lysed standard curve present? |
+| `triton_final_conc_pct` | number | Final Triton X-100 % (UCUM `%`) |
 | `curve_well_volume_uL` | number | Standard-curve well, microlitres |
 | `sample_well_volume_uL` | number | Sample well, microlitres |
-| `incubation_time_min` | number | Minutes |
-| `incubation_temperature_C` | number | Degrees Celsius |
+| `sample_dilution_ug_per_mL` | number | Target RNA µg/mL (UCUM `ug/mL`) |
+| `lysis_time_min` | number | Lysis incubation minutes |
+| `lysis_temperature_C` | number | Lysis temperature |
+| `dye_incubation_time_min` | number | Dye incubation minutes |
+| `dye_incubation_light` | `"dark"` \| `"light"` | Typical practice is dark |
+| `blank_subtraction.triton_blank` | boolean | Triton blank subtracted? |
+| `blank_subtraction.water_blank` | boolean | Water blank subtracted? |
 | `ee_formula` | `1-(free/total)` \| `total/free` \| `free/total` | Normalised expression |
 | `excitation_nm` | number | Nanometres |
 | `emission_nm` | number | Nanometres |
 | `notes` | string | Only free text; local only |
+| `reagents.*.chebi_id` | string \| null | Optional. Triton X-100 `CHEBI:9750`; RiboGreen `null` (no term) |
 
-Other assay types get their own fixed set in `schemas/variant-<assay>.schema.json`. Do not add ad-hoc keys.
+Cross-lab field tables flatten the two blanks. Other assay types get their own fixed set in `schemas/variant-<assay>.schema.json`. Do not add ad-hoc keys.
 
 ## Shared check
 
@@ -100,11 +107,11 @@ Example:
 
 ```json
 {
-  "id": "inverted-ee-formula",
+  "id": "ee-formula-error",
   "assay": "ribogreen-ee",
-  "rule": "Flag when EE is written as total/free, or free/total without 1 minus.",
-  "reason": "That expression inverts free and total and does not report a fraction encapsulated.",
-  "library_version": "0.1.0"
+  "rule": "Flag total/free (inverted) and free/total without 1 − (leak fraction, mislabelled) with distinct messages.",
+  "reason": "Those two expressions are different errors: one inverts free and total; the other reports leak as EE.",
+  "library_version": "0.3.0"
 }
 ```
 
@@ -132,7 +139,7 @@ Example (new lab, counts toward the headline metric):
 
 ```json
 {
-  "check_id": "inverted-ee-formula",
+  "check_id": "ee-formula-error",
   "assay": "ribogreen-ee",
   "verdict": "accept",
   "lab_novelty": "new",
@@ -154,34 +161,7 @@ Rule weight for check *c* is the sum of `weight_delta` (default `+1` / `−1`). 
   "required": ["assay", "variant", "n_qc_results", "n_signed_off"],
   "properties": {
     "assay": { "type": "string" },
-    "variant": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "assay_type",
-        "dye_dilution",
-        "triton_standard_curve",
-        "curve_well_volume_uL",
-        "sample_well_volume_uL",
-        "incubation_time_min",
-        "incubation_temperature_C",
-        "ee_formula",
-        "excitation_nm",
-        "emission_nm"
-      ],
-      "properties": {
-        "assay_type": { "const": "ribogreen-ee" },
-        "dye_dilution": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
-        "triton_standard_curve": { "type": "boolean" },
-        "curve_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
-        "sample_well_volume_uL": { "type": "number", "exclusiveMinimum": 0 },
-        "incubation_time_min": { "type": "number", "exclusiveMinimum": 0 },
-        "incubation_temperature_C": { "type": "number" },
-        "ee_formula": { "enum": ["1-(free/total)", "total/free", "free/total"] },
-        "excitation_nm": { "type": "number", "exclusiveMinimum": 0 },
-        "emission_nm": { "type": "number", "exclusiveMinimum": 0 }
-      }
-    },
+    "variant": { "$ref": "variant-key-ribogreen-ee.schema.json" },
     "n_qc_results": { "type": "integer", "minimum": 0 },
     "n_signed_off": { "type": "integer", "minimum": 0 },
     "n_spec_miss": { "type": "integer", "minimum": 0 },
@@ -200,10 +180,15 @@ Example (synthetic counts, no measurements):
     "assay_type": "ribogreen-ee",
     "dye_dilution": "1:200",
     "triton_standard_curve": true,
+    "triton_final_conc_pct": 0.5,
     "curve_well_volume_uL": 100,
     "sample_well_volume_uL": 100,
-    "incubation_time_min": 5,
-    "incubation_temperature_C": 25,
+    "sample_dilution_ug_per_mL": 0.5,
+    "lysis_time_min": 10,
+    "lysis_temperature_C": 37,
+    "dye_incubation_time_min": 5,
+    "dye_incubation_light": "dark",
+    "blank_subtraction": { "triton_blank": true, "water_blank": true },
     "ee_formula": "1-(free/total)",
     "excitation_nm": 485,
     "emission_nm": 530

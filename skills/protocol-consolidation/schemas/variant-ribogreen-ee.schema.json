@@ -9,19 +9,22 @@
     "assay_type",
     "dye_dilution",
     "triton_standard_curve",
+    "triton_final_conc_pct",
     "curve_well_volume_uL",
     "sample_well_volume_uL",
-    "incubation_time_min",
-    "incubation_temperature_C",
+    "sample_dilution_ug_per_mL",
+    "lysis_time_min",
+    "lysis_temperature_C",
+    "dye_incubation_time_min",
+    "dye_incubation_light",
+    "blank_subtraction",
     "ee_formula",
     "excitation_nm",
     "emission_nm",
     "notes"
   ],
   "properties": {
-    "assay_type": {
-      "const": "ribogreen-ee"
-    },
+    "assay_type": { "const": "ribogreen-ee" },
     "dye_dilution": {
       "type": "string",
       "pattern": "^[0-9]+:[0-9]+$",
@@ -31,43 +34,89 @@
       "type": "boolean",
       "description": "True if a lysed (Triton) standard curve is described or used."
     },
-    "curve_well_volume_uL": {
+    "triton_final_conc_pct": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Standard-curve well volume in microlitres."
+      "description": "Final Triton X-100 concentration in percent (UCUM %). JSON-LD export maps this reagent via optional reagents.triton_x100.chebi_id (CHEBI:9750)."
+    },
+    "reagents": {
+      "$ref": "#/$defs/reagents"
+    },
+    "curve_well_volume_uL": {
+      "type": "number",
+      "exclusiveMinimum": 0
     },
     "sample_well_volume_uL": {
       "type": "number",
-      "exclusiveMinimum": 0,
-      "description": "Sample well volume in microlitres."
+      "exclusiveMinimum": 0
     },
-    "incubation_time_min": {
+    "sample_dilution_ug_per_mL": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Dye incubation time in minutes."
+      "description": "Sample RNA dilution in ug/mL (UCUM ug/mL)."
     },
-    "incubation_temperature_C": {
+    "lysis_time_min": {
       "type": "number",
-      "description": "Dye incubation temperature in degrees Celsius."
+      "exclusiveMinimum": 0
+    },
+    "lysis_temperature_C": { "type": "number" },
+    "dye_incubation_time_min": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "dye_incubation_light": {
+      "type": "string",
+      "enum": ["dark", "light"],
+      "description": "Typical RiboGreen practice is dark."
+    },
+    "blank_subtraction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["triton_blank", "water_blank"],
+      "properties": {
+        "triton_blank": { "type": "boolean" },
+        "water_blank": { "type": "boolean" }
+      }
     },
     "ee_formula": {
       "type": "string",
-      "enum": ["1-(free/total)", "total/free", "free/total"],
-      "description": "Normalised EE expression. Equivalents of 1-(free/total) include (total-free)/total."
+      "enum": ["1-(free/total)", "total/free", "free/total"]
     },
-    "excitation_nm": {
-      "type": "number",
-      "exclusiveMinimum": 0,
-      "description": "Excitation wavelength in nanometres."
-    },
-    "emission_nm": {
-      "type": "number",
-      "exclusiveMinimum": 0,
-      "description": "Emission wavelength in nanometres."
-    },
+    "excitation_nm": { "type": "number", "exclusiveMinimum": 0 },
+    "emission_nm": { "type": "number", "exclusiveMinimum": 0 },
     "notes": {
       "type": "string",
       "description": "Only free-text field. Local only; strip before sharing."
+    }
+  },
+  "$defs": {
+    "reagents": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional vocabulary IDs on reagent fields, used by the JSON-LD export. Omit or null chebi_id when no term exists; never invent.",
+      "properties": {
+        "triton_x100": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chebi_id": {
+              "type": "string",
+              "pattern": "^CHEBI:[0-9]+$",
+              "description": "Triton X-100 is CHEBI:9750."
+            }
+          }
+        },
+        "ribogreen": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chebi_id": {
+              "type": ["string", "null"],
+              "description": "TODO: no ChEBI term for Quant-iT RiboGreen. Leave null; never invent."
+            }
+          }
+        }
+      }
     }
   }
 }

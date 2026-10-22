@@ -2,7 +2,15 @@
   "disclaimer": "SYNTHETIC graph. Not a real lab, paper, or instrument.",
   "entities": {
     "assay_types": [
-      { "id": "ribogreen-ee", "label": "RiboGreen encapsulation efficiency" }
+      {
+        "id": "ribogreen-ee",
+        "label": "RiboGreen encapsulation efficiency",
+        "obi_id": "OBI:0000070"
+      }
+    ],
+    "reagents": [
+      { "id": "triton-x100", "label": "Triton X-100", "chebi_id": "CHEBI:9750" },
+      { "id": "ribogreen", "label": "Quant-iT RiboGreen", "chebi_id": null }
     ],
     "protocol_versions": [
       {
@@ -23,6 +31,12 @@
       }
     ],
     "datasets": [
+      {
+        "id": "ds-paper-ee-1",
+        "path": "s3://simulated-prodqc/synthetic-ribogreen/paper-ee-1.json",
+        "date": "2025-09-15",
+        "owner": "person:operator"
+      },
       {
         "id": "ds-north-plate-1",
         "path": "s3://simulated-prodqc/synthetic-ribogreen/north-plate-1.json",
@@ -48,13 +62,38 @@
     ],
     "checks": [
       { "id": "methods-vs-wiki", "assay": "ribogreen-ee" },
-      { "id": "inverted-ee-formula", "assay": "ribogreen-ee" }
+      { "id": "ee-formula-error", "assay": "ribogreen-ee" },
+      { "id": "in-well-conc-out-of-range", "assay": "ribogreen-ee" }
     ]
   },
   "edges": [
     {
       "type": "ran_under",
       "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "ran_under",
+      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "measured_on",
+      "from": { "kind": "dataset", "id": "ds-north-plate-1" },
+      "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "measured_on",
+      "from": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "to": { "kind": "instrument", "id": "inst-plate-reader-sim" },
+      "provenance": { "kind": "stated" }
+    },
+    {
+      "type": "owns",
+      "from": { "kind": "person", "id": "person:assay_owner" },
       "to": { "kind": "protocol_version", "id": "pv-N101-v2" },
       "provenance": { "kind": "stated" }
     },
@@ -67,11 +106,8 @@
     {
       "type": "derived_from",
       "from": { "kind": "figure", "id": "fig-1" },
-      "to": { "kind": "dataset", "id": "ds-north-plate-1" },
-      "provenance": {
-        "kind": "inferred",
-        "reason": "Figure date after dataset date; same assay family; caption does not name the file."
-      }
+      "to": { "kind": "dataset", "id": "ds-paper-ee-1" },
+      "provenance": { "kind": "stated" }
     },
     {
       "type": "supersedes",
@@ -86,11 +122,7 @@
       "type": "applies_to",
       "from": { "kind": "check", "id": "methods-vs-wiki" },
       "to": { "kind": "assay_type", "id": "ribogreen-ee" },
-      "provenance": {
-        "kind": "confirmed",
-        "who": "person:assay_owner",
-        "when": "2026-01-15T16:00:00.000Z"
-      }
+      "provenance": { "kind": "stated" }
     }
   ]
 }

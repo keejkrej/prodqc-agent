@@ -25,7 +25,7 @@ These are **generic**. The RiboGreen worked example uses them; other assays will
 | Class | What to flag |
 | --- | --- |
 | Missing calibration / standard curves | Assay that needs both a total (lysed) and a free (unlysed) curve, but only one (or none) is described |
-| Formula inversion | Reported encapsulation efficiency as `total/free` (or free/total without `1 −`) instead of `1 − (free/total)` |
+| Formula error (`ee-formula-error`) | `total/free` inverts free and total; `free/total` without `1 −` is the leak fraction mislabelled as EE. Distinct messages. |
 | Dilution mismatch | Dye or sample dilution differs across versions (for example 1:100 vs 1:200) with no recorded reason |
 | Volume inconsistency | Standard-curve well volume ≠ sample well volume, or versions disagree on well volume |
 

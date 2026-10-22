@@ -53,6 +53,10 @@
         "checks": {
           "type": "array",
           "items": { "$ref": "#/$defs/check" }
+        },
+        "reagents": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/reagent" }
         }
       }
     },
@@ -68,7 +72,28 @@
       "required": ["id"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
-        "label": { "type": "string" }
+        "label": { "type": "string" },
+        "obi_id": {
+          "type": "string",
+          "pattern": "^OBI:[0-9]+$",
+          "description": "Optional OBI term. RiboGreen EE uses the generic assay OBI:0000070. Never invent an ID."
+        }
+      }
+    },
+    "reagent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "chebi_id": {
+          "oneOf": [
+            { "type": "string", "pattern": "^CHEBI:[0-9]+$" },
+            { "type": "null" }
+          ],
+          "description": "Optional ChEBI ID (CHEBI:n). Null/omit when no term exists (RiboGreen). Never invent an ID."
+        }
       }
     },
     "protocolVersion": {
@@ -215,7 +240,7 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["ran_under", "reported_in", "derived_from", "supersedes", "applies_to"]
+          "enum": ["ran_under", "reported_in", "derived_from", "supersedes", "applies_to", "measured_on", "owns"]
         },
         "from": { "$ref": "#/$defs/endpoint" },
         "to": { "$ref": "#/$defs/endpoint" },

@@ -30,7 +30,7 @@ Do **not** encode the owner’s chosen dilution or volume as a universal constan
   "versions_compared": 3,
   "checks": [
     { "id": "missing-dual-standard-curves", "hits": 1, "unknown": 0 },
-    { "id": "inverted-ee-formula", "hits": 2, "unknown": 0 }
+    { "id": "ee-formula-error", "hits": 2, "unknown": 0 }
   ],
   "decisions": { "accepted": 2, "corrected": 1, "deferred": 0 },
   "proposed_checks": 1

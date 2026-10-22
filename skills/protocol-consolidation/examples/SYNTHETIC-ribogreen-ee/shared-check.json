@@ -1,7 +1,7 @@
 {
-  "id": "inverted-ee-formula",
+  "id": "ee-formula-error",
   "assay": "ribogreen-ee",
-  "rule": "Flag when EE is written as total/free, or free/total without 1 minus.",
-  "reason": "That expression inverts free and total and does not report a fraction encapsulated.",
-  "library_version": "0.1.0"
+  "rule": "Flag total/free (inverted) and free/total without 1 − (leak fraction, mislabelled) with distinct messages.",
+  "reason": "Those two expressions are different errors: one inverts free and total; the other reports leak as EE.",
+  "library_version": "0.3.0"
 }

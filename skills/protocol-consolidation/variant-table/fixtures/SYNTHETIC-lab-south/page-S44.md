@@ -10,7 +10,17 @@ Working dye dilution: 1:100.
 
 Standard-curve wells were 200 µL. Sample wells were 200 µL.
 
-Incubate 10 min at 22 °C.
+Lyse 15 min at 22 °C.
+
+Dye incubation 10 min in the light.
+
+Triton final concentration: 0.1 %.
+
+Sample dilution: 2 ug/mL.
+
+In-well RNA: 2 ug/mL.
+
+Triton blank: no. Water blank: yes.
 
 Encapsulation efficiency is reported as total/free.
 

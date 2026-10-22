@@ -1,6 +1,16 @@
 # Checks library changelog
 
-Only **accepted** diffs belong here. No lab page titles, no SOP values.
+Only **accepted** diffs belong here after an owner signs off. This library is currently `status: proposed`.
+
+## 0.3.0 — proposed — 2026-10-22
+
+- Status set to `proposed` (no owner has accepted anything yet).
+- Renamed `inverted-ee-formula` → `ee-formula-error` with distinct messages for `total/free` (inverted) and `free/total` without `1 −` (leak fraction, mislabelled).
+- Added `in-well-conc-out-of-range` (configurable ranges in `ribogreen-ee.ranges.json`; default high-range `1:200` linear up to ~1 ug/mL in-well).
+- Split incubation into lysis vs dye; added Triton final %, sample dilution, blank subtraction.
+- `methods-vs-wiki` matches linked dataset dates first; submission date is fallback only.
+- Optional `obi_id` on AssayType and `chebi_id` on reagent fields for JSON-LD (Triton X-100 `CHEBI:9750`; RiboGreen none).
+- Approver: pending.
 
 ## 0.2.0 — 2026-10-21
 

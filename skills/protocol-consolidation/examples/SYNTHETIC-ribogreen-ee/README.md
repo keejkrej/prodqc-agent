@@ -34,7 +34,7 @@ Empty stub and import pack are out of the shortlist.
 | Check | v1 | v2 | v3 |
 | --- | --- | --- | --- |
 | `missing-dual-standard-curves` | hit (Triton curve only) | clear | unknown |
-| `inverted-ee-formula` | hit (`total/free`) | hit (`total/free`) | clear (`1 − free/total`) |
+| `ee-formula-error` | hit (`total/free`, inverted) | hit (`total/free`, inverted) | clear (`1 − free/total`) |
 | `dye-dilution-mismatch` | 1:100 | 1:200 | unknown → mismatch across v1/v2 |
 | `well-volume-mismatch` | 200 µL stated once | 100 µL stated once | hit (curve 200 µL, samples 100 µL) |
 
@@ -53,11 +53,11 @@ Copy `versions/` to a private `input/` and run the drafting CLI. Every number in
 
 Suppose the owner accepts `1 − (free/total)` and asks that **undocumented dye-dilution changes** stay a library check (already `dye-dilution-mismatch`). They also ask to catch “formula written as total/free” more explicitly in CHANGELOG language.
 
-`proposed-check.diff` is a **sample approved-style diff** adding a one-line clarification to `inverted-ee-formula`. In a real run the agent only writes this file; a receiving lab applies it only when **its** owner signs off.
+`proposed-check.diff` is a **sample approved-style diff** adding a one-line clarification to `ee-formula-error`. In a real run the agent only writes this file; a receiving lab applies it only when **its** owner signs off.
 
 ## Provenance on QC / sign-off
 
-`qc-result.json` and `signed-off.json` show the required local envelope: `protocol_page_id`, `protocol_version`, and a RiboGreen `variant` (`dye_dilution`, `triton_standard_curve`, well volumes, incubation, normalised `ee_formula`, wavelengths, `notes`). Notes stay in the lab.
+`qc-result.json` and `signed-off.json` show the required local envelope: `protocol_page_id`, `protocol_version`, and a RiboGreen `variant` (`dye_dilution`, `triton_standard_curve`, Triton %, well volumes, sample dilution, lysis vs dye incubation, blanks, normalised `ee_formula`, wavelengths, `notes`). Notes stay in the lab.
 
 Shareable objects for the cross-lab loop (no protocol text):
 

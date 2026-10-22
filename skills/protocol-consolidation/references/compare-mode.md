@@ -13,7 +13,7 @@ Unread fields are omitted. Do not fill a dilution, volume, formula, incubation, 
 
 ## Methods vs wiki
 
-Same extractor, different right-hand side. A paper’s methods section is extracted to the same field table and compared to the `ProtocolVersion` whose `[valid_from, valid_to)` contains the day **before** (and including) the submission date. See [docs/lab-ontology.md](../../../docs/lab-ontology.md).
+Same extractor, different right-hand side. A paper’s methods section is extracted to the same field table and compared to the `ProtocolVersion` that was current on the **dates of linked datasets** (figures `derived_from` those datasets). Use the publication’s submission date only when there are no linked datasets. See [docs/lab-ontology.md](../../../docs/lab-ontology.md).
 
 ```
 npm run variant-table -- methods-vs-wiki \

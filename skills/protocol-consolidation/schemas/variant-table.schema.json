@@ -20,10 +20,17 @@
       "properties": {
         "dye_dilution": { "$ref": "#/$defs/stringField" },
         "triton_standard_curve": { "$ref": "#/$defs/booleanField" },
+        "triton_final_conc_pct": { "$ref": "#/$defs/numberField" },
         "curve_well_volume_uL": { "$ref": "#/$defs/numberField" },
         "sample_well_volume_uL": { "$ref": "#/$defs/numberField" },
-        "incubation_time_min": { "$ref": "#/$defs/numberField" },
-        "incubation_temperature_C": { "$ref": "#/$defs/numberField" },
+        "sample_dilution_ug_per_mL": { "$ref": "#/$defs/numberField" },
+        "in_well_rna_ug_per_mL": { "$ref": "#/$defs/numberField" },
+        "lysis_time_min": { "$ref": "#/$defs/numberField" },
+        "lysis_temperature_C": { "$ref": "#/$defs/numberField" },
+        "dye_incubation_time_min": { "$ref": "#/$defs/numberField" },
+        "dye_incubation_light": { "$ref": "#/$defs/lightField" },
+        "triton_blank": { "$ref": "#/$defs/booleanField" },
+        "water_blank": { "$ref": "#/$defs/booleanField" },
         "ee_formula": { "$ref": "#/$defs/formulaField" },
         "excitation_nm": { "$ref": "#/$defs/numberField" },
         "emission_nm": { "$ref": "#/$defs/numberField" }
@@ -71,6 +78,15 @@
       "required": ["value", "source"],
       "properties": {
         "value": { "type": "number" },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "lightField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source"],
+      "properties": {
+        "value": { "type": "string", "enum": ["dark", "light"] },
         "source": { "$ref": "#/$defs/source" }
       }
     },

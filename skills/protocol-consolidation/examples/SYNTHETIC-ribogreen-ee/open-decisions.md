@@ -11,7 +11,7 @@ Not a real owner record.
 
 ## D-ee-formula
 
-- check_id: `inverted-ee-formula`
+- check_id: `ee-formula-error`
 - v1 and v2 use `total/free`; v3 uses `1 - free/total`
 - Question: Is EE `1 − (free/total)`?
 - status: open

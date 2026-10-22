@@ -3,27 +3,32 @@
 @@ -1,6 +1,6 @@
  ---
  assay_type: ribogreen-ee
--library_version: 0.1.0
-+library_version: 0.1.1
- status: accepted
+-library_version: 0.3.0
++library_version: 0.3.1
+ status: proposed
  ---
-@@ -22,7 +22,7 @@
- ### inverted-ee-formula
+@@ -27,7 +27,7 @@
+ ### ee-formula-error
  
- - **Class:** formula inversion
--- **Flag when:** EE is written as `total/free`, `free/total` without `1 −`, or “total over free”.
-+- **Flag when:** EE is written as `total/free`, `free/total` without `1 −`, or “total over free”. Treat `total over free` as the same class as `total/free`.
- - **Clear when:** EE is `1 − (free/total)` (equivalently `(total − free) / total`) with free and total defined on the same standard-curve basis.
- - **Do not encode:** a numeric EE spec (that belongs in the protocol draft, sourced).
+ - **Class:** formula error (two distinct messages)
+-- **Flag when (inverted):** EE is written as `total/free` or “total over free”.
++- **Flag when (inverted):** EE is written as `total/free` or “total over free”. Treat `total over free` as the same inverted hit.
+   - **Message:** EE written as total/free inverts free and total and does not report a fraction encapsulated.
+ - **Flag when (leak fraction, mislabelled):** EE is written as `free/total` without `1 −`.
+   - **Message:** EE written as free/total without 1 − reports the leak fraction, mislabelled as encapsulation efficiency.
 --- a/skills/protocol-consolidation/checks/CHANGELOG.md
 +++ b/skills/protocol-consolidation/checks/CHANGELOG.md
 @@ -4,3 +4,8 @@
- ## 0.1.0 — 2026-10-21
+ ## 0.3.0 — proposed — 2026-10-22
  
- - Added `ribogreen-ee` with generic classes: `missing-dual-standard-curves`, `inverted-ee-formula`, `dye-dilution-mismatch`, `well-volume-mismatch`.
- - Approver: library seed (synthetic worked example, not a lab run).
+ - Status set to `proposed` (no owner has accepted anything yet).
+ - Renamed `inverted-ee-formula` → `ee-formula-error` with distinct messages for `total/free` (inverted) and `free/total` without `1 −` (leak fraction, mislabelled).
+ - Added `in-well-conc-out-of-range` (configurable ranges in `ribogreen-ee.ranges.json`; default high-range `1:200` linear up to ~1 ug/mL in-well).
+ - Split incubation into lysis vs dye; added Triton final %, sample dilution, blank subtraction.
+ - `methods-vs-wiki` matches linked dataset dates first; submission date is fallback only.
+ - Approver: pending.
 +
-+## 0.1.1 — proposed (human must approve)
++## 0.3.1 — proposed (human must approve)
 +
-+- Clarify `inverted-ee-formula` treats “total over free” wording as the same hit.
++- Clarify `ee-formula-error` treats “total over free” wording as the inverted hit.
 +- Approver: pending.

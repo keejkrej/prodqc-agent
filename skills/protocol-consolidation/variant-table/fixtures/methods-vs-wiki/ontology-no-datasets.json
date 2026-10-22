@@ -1,0 +1,38 @@
+{
+  "disclaimer": "SYNTHETIC graph with a publication but no linked datasets — methods-vs-wiki falls back to submission date.",
+  "entities": {
+    "assay_types": [{ "id": "ribogreen-ee" }],
+    "protocol_versions": [
+      {
+        "id": "pv-N101-v1",
+        "page_id": "N101",
+        "version": 1,
+        "valid_from": "2024-01-01",
+        "valid_to": "2025-06-01",
+        "assay_type": "ribogreen-ee"
+      },
+      {
+        "id": "pv-N101-v2",
+        "page_id": "N101",
+        "version": 2,
+        "valid_from": "2025-06-01",
+        "valid_to": null,
+        "assay_type": "ribogreen-ee"
+      }
+    ],
+    "datasets": [],
+    "publications": [
+      {
+        "id": "pub-synthetic-1",
+        "doi": "10.0000/SYNTHETIC.ribogreen.1",
+        "figures": [],
+        "submitted": "2025-11-01"
+      }
+    ],
+    "figures": [],
+    "instruments": [],
+    "people": [{ "id": "person:assay_owner", "role": "assay_owner" }],
+    "checks": []
+  },
+  "edges": []
+}
